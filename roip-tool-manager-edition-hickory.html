@@ -1,0 +1,1294 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- Locked light, exactly like the first version of the live tool: the
+         page stays white with black text even when the phone is in dark mode. -->
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#007a33" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="ROIP · Hickory" />
+    <link rel="icon" href="data:," />
+    <title>ROIP Tool — Manager Edition · Hickory</title>
+    <style>
+      :root {
+        --green: #007a33;
+        --green-dark: #00582a;
+        --nn: #b3001b;
+        --ink: #1a1d1a;
+        --dim: #5c665e;
+        --line: #d8ddd8;
+        --page: #ffffff;
+        --surface: #ffffff;
+        --soft: #f4f6f4;
+        --help-bg: #fdf6e0;
+        --help-line: #e3cf8a;
+        --help-ink: #4a3f14;
+        --final: #262626;
+        color-scheme: light;
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; background: #ffffff; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: var(--page);
+        color: var(--ink);
+        font-size: 16px;
+        line-height: 1.45;
+      }
+      button { font: inherit; cursor: pointer; }
+      input, textarea, select { font: inherit; color: var(--ink); }
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.75rem; }
+      .wrap { max-width: 760px; margin: 0 auto; padding: 0 14px 48px; }
+      [hidden] { display: none !important; }
+
+      /* ---------- Brand bar (same as the live tool) ---------- */
+      .brandbar { background: var(--green); color: #fff; }
+      .brandbar .inner { max-width: 760px; margin: 0 auto; padding: 12px 14px; }
+      .brandbar .row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+      .brandbar .brand { font-size: 1.25rem; font-weight: 800; letter-spacing: .02em; }
+      .brandbar .form-name { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; opacity: .92; text-align: right; }
+      .brandbar .tag { font-size: .78rem; opacity: .9; margin-top: 2px; }
+
+      /* ---------- Cards & section bars ---------- */
+      .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-bottom: 16px; }
+      .panel.pad { padding: 16px; }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 6px 18px rgba(0,0,0,.09);
+      }
+      .section-bar {
+        display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        padding: 9px 12px; color: #fff;
+      }
+      .section-bar h2 { margin: 0; font-size: 1rem; font-weight: 700; line-height: 1.3; }
+      .section-bar .right { font-size: .88rem; font-weight: 700; white-space: nowrap; }
+      .kicker { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin: 0; }
+      h1.page-title { font-size: 1.55rem; font-weight: 800; margin: 4px 0 4px; line-height: 1.2; }
+      h1.page-title .num { color: var(--dim); font-weight: 600; }
+      .sub { color: var(--dim); font-size: .95rem; margin: 0; }
+      .group-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--dim); margin: 0 2px 6px; }
+
+      /* ---------- Buttons ---------- */
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        border-radius: 12px; border: 1px solid var(--line); background: var(--surface);
+        padding: 10px 16px; font-weight: 700; color: var(--ink); min-height: 48px;
+      }
+      .btn.primary { background: var(--green); border-color: var(--green); color: #fff; }
+      .btn.dark { background: var(--final); border-color: var(--final); color: #fff; }
+      .btn.big { width: 100%; padding: 15px 16px; font-size: 1.08rem; font-weight: 800; border-radius: 14px; }
+      .btn:disabled { opacity: .45; cursor: default; }
+      .btn.danger-outline { border-color: var(--nn); color: var(--nn); }
+      .link-btn { background: none; border: 0; padding: 8px 2px; min-height: 40px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; color: var(--ink); }
+      .link-btn.dim { color: var(--dim); font-size: .9rem; }
+
+      /* ---------- Forms ---------- */
+      label.flabel { display: block; font-size: .9rem; font-weight: 700; margin: 0 0 6px; }
+      .field-input {
+        width: 100%; min-height: 48px; border: 1.5px solid var(--line); border-radius: 10px;
+        background: var(--surface); padding: 10px 12px; font-size: 1rem;
+      }
+      textarea.field-input { min-height: 96px; resize: vertical; }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .stack > * + * { margin-top: 16px; }
+      .store-lock {
+        background: var(--green); color: #fff; border-radius: 12px; padding: 12px 14px;
+      }
+      .store-lock .sname { font-size: 1.02rem; font-weight: 800; display: block; }
+      .store-lock .sname .num { font-weight: 600; opacity: .85; }
+      .store-lock .sgm { font-size: .8rem; opacity: .92; display: block; margin-top: 1px; }
+
+      /* ---------- Starting ROIP banner ---------- */
+      .banner { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; }
+      .banner .bhead { background: var(--final); color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; }
+      .banner .bhead h2 { margin: 0; font-size: 1rem; font-weight: 700; }
+      .banner .bscore { font-size: 1.3rem; font-weight: 800; white-space: nowrap; }
+      .banner .bscore span { font-size: .85rem; font-weight: 600; opacity: .7; }
+      .banner ul { list-style: none; margin: 0; padding: 0; }
+      .banner li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; border-bottom: 1px solid var(--line); font-size: .97rem; }
+      .banner li:last-child { border-bottom: 0; }
+      .banner .det { color: var(--dim); }
+      .banner .red { font-weight: 800; color: var(--nn); }
+      .banner .grn { font-weight: 800; color: var(--green); }
+      .banner .bfoot { padding: 8px 12px 10px; font-size: .78rem; color: var(--dim); border-top: 1px solid var(--line); }
+
+      /* ---------- Questions ---------- */
+      .q-head { display: flex; align-items: flex-start; gap: 10px; }
+      .q-text { font-size: 1rem; font-weight: 600; line-height: 1.35; margin: 0; flex: 1; }
+      .q-pts { flex: 0 0 auto; font-weight: 700; color: var(--dim); font-size: .9rem; padding-top: 2px; }
+      .score-row { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+      .score-btn {
+        min-width: 46px; height: 46px; padding: 0 8px; border-radius: 10px;
+        border: 1.5px solid var(--line); background: var(--surface);
+        font-size: 1.05rem; font-weight: 700; color: var(--ink);
+      }
+      .score-btn[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: #fff; }
+      .score-btn.zero[aria-pressed="true"] { background: #b3261e; border-color: #b3261e; }
+      .of { color: var(--dim); font-size: .9rem; }
+      .stepper { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+      .stepper .step-btn {
+        width: 46px; height: 46px; border-radius: 10px; border: 1.5px solid var(--line);
+        background: var(--surface); font-size: 1.3rem; font-weight: 700; line-height: 1;
+      }
+      .stepper .step-btn:disabled { opacity: .3; }
+      .stepper .val { min-width: 74px; text-align: center; font-size: 1.25rem; font-weight: 700; }
+      .stepper .val span { font-size: .9rem; color: var(--dim); font-weight: 600; }
+      .stepper .full-btn { height: 46px; padding: 0 14px; border-radius: 10px; border: 0; background: var(--green); color: #fff; font-weight: 700; }
+      .temp-fields { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 14px; }
+      .temp-field { display: flex; align-items: center; gap: 8px; }
+      .temp-field label { font-weight: 600; color: var(--dim); font-size: .92rem; }
+      .temp-field input { width: 84px; min-height: 46px; border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 1.02rem; background: var(--surface); }
+      .prefill-note { margin-top: 10px; background: var(--soft); border-radius: 8px; padding: 8px 10px; font-size: .9rem; }
+      .actions { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+      .note-btn { background: none; border: 0; padding: 8px 4px; min-height: 40px; color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; font-size: .95rem; }
+      .note-btn.has-note { color: var(--green); text-decoration: none; }
+      .actions .spacer { flex: 1; display: flex; justify-content: flex-end; }
+      .help-btn {
+        width: 42px; height: 42px; min-height: 42px; border-radius: 50%;
+        border: 2px solid var(--green); background: var(--surface); color: var(--green);
+        font-size: 1.2rem; font-weight: 800; line-height: 1; flex: 0 0 auto;
+        display: inline-flex; align-items: center; justify-content: center; padding: 0;
+      }
+      .note-wrap { margin-top: 10px; }
+      .note-wrap textarea {
+        width: 100%; min-height: 60px; border: 1.5px solid var(--line); border-radius: 10px;
+        background: var(--surface); padding: 10px 12px; resize: vertical;
+      }
+      .help {
+        margin-top: 12px; background: var(--help-bg); border: 1px solid var(--help-line);
+        border-radius: 10px; padding: 12px 14px; color: var(--help-ink);
+      }
+      .help h4 { margin: 0 0 2px; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+      .help .src { font-size: .78rem; opacity: .85; margin-bottom: 8px; }
+      .help ul { margin: 0; padding-left: 18px; }
+      .help li { font-size: .92rem; line-height: 1.45; margin-bottom: 7px; }
+      .help li:last-child { margin-bottom: 0; }
+      .read-note { margin-top: 8px; background: var(--soft); border-radius: 8px; padding: 8px 10px; font-size: .93rem; font-style: italic; }
+
+      /* ---------- Non-Negotiables ---------- */
+      .nn-card { transition: background .15s; }
+      .nn-card.flagged { background: #fdf0f1; }
+      .nn-toggle { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; text-align: left; background: none; border: 0; padding: 0; min-height: 44px; }
+      .nn-toggle .lbl { font-size: .98rem; font-weight: 600; line-height: 1.35; }
+      .nn-chip { flex: 0 0 auto; border-radius: 8px; padding: 7px 10px; font-size: .85rem; font-weight: 800; border: 1px solid var(--line); color: var(--dim); }
+      .nn-card.flagged .nn-chip { background: var(--nn); border-color: var(--nn); color: #fff; }
+      .nn-help-row { display: flex; justify-content: flex-end; margin-top: 10px; }
+
+      /* ---------- Photo spots ---------- */
+      .photo-spot { border: 2px dashed var(--line); background: #fffaf0; border-radius: 14px; padding: 14px; margin-bottom: 20px; }
+      .photo-spot .ps-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+      .photo-spot .ps-name { font-size: .98rem; font-weight: 700; margin: 0; }
+      .photo-spot .ps-req { color: var(--nn); font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; margin-left: 6px; }
+      .photo-spot .ps-count { flex: 0 0 auto; border-radius: 8px; padding: 5px 9px; font-size: .78rem; font-weight: 800; color: #fff; background: var(--nn); }
+      .photo-spot .ps-count.done { background: var(--green); }
+      .ps-slots { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+      .ps-slot { display: flex; align-items: center; gap: 8px; }
+      .ps-taken { flex: 1; display: inline-flex; align-items: center; height: 46px; border-radius: 10px; padding: 0 12px; font-size: .92rem; font-weight: 700; color: #fff; background: var(--green); }
+      .ps-take { flex: 1; height: 46px; border: 0; border-radius: 10px; background: var(--final); color: #fff; font-size: .92rem; font-weight: 800; }
+      .ps-take:disabled, .ps-small:disabled { opacity: .5; }
+      .ps-small { height: 46px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: #fff; font-size: .9rem; font-weight: 700; }
+      .ps-del { width: 46px; padding: 0; }
+      .ps-err { margin-top: 8px; font-size: .9rem; font-weight: 600; color: var(--nn); }
+
+      /* ---------- Walk chrome ---------- */
+      .walkbar { position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid var(--line); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+      .walkbar .inner { max-width: 760px; margin: 0 auto; padding: 10px 14px 10px; }
+      .walkbar .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+      .walkbar .store { font-size: 1rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .walkbar .store .num { color: var(--dim); font-weight: 600; }
+      .walkbar .meta { font-size: .75rem; color: var(--dim); line-height: 1.3; }
+      .walkbar .scorebox { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+      .walkbar .photos-chip { border-radius: 8px; padding: 5px 9px; font-size: .78rem; font-weight: 800; color: #fff; background: var(--nn); }
+      .walkbar .photos-chip.done { background: var(--green); }
+      .walkbar .total { font-size: 1.45rem; font-weight: 800; }
+      .walkbar .total span { font-size: .85rem; color: var(--dim); font-weight: 600; }
+      .grade { display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; padding: 5px 9px; font-weight: 700; color: #fff; font-size: .88rem; }
+      .grade.lg { padding: 8px 12px; font-size: 1.05rem; }
+      .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+      .tab { border: 0; border-radius: 9px; padding: 8px 10px; font-size: .78rem; font-weight: 700; color: #fff; opacity: .55; min-height: 38px; }
+      .tab.active { opacity: 1; }
+      .walk-nav { display: flex; gap: 8px; margin-top: 4px; }
+      .walk-nav .btn { flex: 1; }
+
+      /* ---------- Reference blocks ---------- */
+      .ref { background: var(--soft); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: .92rem; margin-bottom: 20px; }
+      .ref p { margin: 0 0 6px; }
+      .ref p:last-child { margin-bottom: 0; }
+      .ref .rtitle { font-weight: 700; }
+      .ref dl { margin: 0; }
+      .ref .rrow { display: flex; gap: 8px; margin-bottom: 5px; }
+      .ref dt { width: 128px; flex: 0 0 auto; font-weight: 600; }
+      .ref dt span { color: var(--dim); font-weight: 400; }
+      .ref dd { margin: 0; }
+      .ref .scale-line { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+      .ref table { border-collapse: collapse; margin-top: 4px; }
+      .ref th, .ref td { text-align: left; padding: 2px 10px 2px 0; font-weight: 400; }
+      .ref th { color: var(--dim); font-weight: 600; }
+
+      /* ---------- Summary table ---------- */
+      table.sum { width: 100%; border-collapse: collapse; font-size: .97rem; }
+      table.sum th { text-align: left; font-size: .85rem; color: var(--dim); font-weight: 600; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+      table.sum th.r, table.sum td.r { text-align: right; }
+      table.sum td { padding: 8px 12px; border-bottom: 1px solid var(--line); font-weight: 500; }
+      table.sum tr:last-child td { border-bottom: 0; }
+      table.sum td.val { font-weight: 700; text-align: right; }
+      .grade-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 12px; }
+      .bands { list-style: none; margin: 0; padding: 0; font-size: .88rem; color: var(--dim); }
+      .bands li.on { font-weight: 700; color: var(--ink); }
+      .warn { color: var(--nn); font-weight: 600; font-size: .92rem; }
+      .ok { color: var(--green); font-weight: 700; }
+      ul.checklist { list-style: none; margin: 0; padding: 4px 12px; }
+      ul.checklist li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: .97rem; font-weight: 500; }
+      ul.checklist li:last-child { border-bottom: 0; }
+
+      /* ---------- History ---------- */
+      .hist-item { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 14px; border: 0; border-bottom: 1px solid var(--line); background: #fff; text-align: left; }
+      .hist-item:last-child { border-bottom: 0; }
+      .hist-item .hname { display: block; font-size: .97rem; font-weight: 800; }
+      .hist-item .hname .num { color: var(--dim); font-weight: 600; }
+      .hist-item .hmeta { display: block; font-size: .78rem; color: var(--dim); margin-top: 1px; }
+      .hist-item .hscore { display: flex; align-items: center; gap: 8px; }
+      .hist-item .hscore .n { font-size: 1.1rem; font-weight: 800; }
+      .empty-note { padding: 18px 14px; font-size: .95rem; color: var(--dim); }
+      .draft-card { border: 2px solid var(--nn); border-radius: 14px; background: #fff; padding: 16px; margin-bottom: 16px; }
+      .draft-card .kicker { color: var(--nn); }
+      .draft-card h2 { margin: 4px 0 2px; font-size: 1.15rem; font-weight: 800; }
+      .draft-actions { display: flex; gap: 8px; margin-top: 12px; }
+      .draft-actions .btn { flex: 1; }
+      .draft-actions .btn.danger-outline { flex: 0 0 auto; }
+
+      /* ---------- Result / paper form ---------- */
+      .resultbar { position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid var(--line); }
+      .resultbar .inner { max-width: 760px; margin: 0 auto; padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      .resultbar .btn { flex: 1 1 auto; }
+      .paper { font-size: .85rem; line-height: 1.4; color: #000; }
+      .paper .p-head { background: var(--green); color: #fff; padding: 8px 12px; }
+      .paper .p-head .row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+      .paper .p-head .brand { font-size: 1.1rem; font-weight: 800; letter-spacing: .02em; }
+      .paper .p-head .fname { font-size: .88rem; font-weight: 700; }
+      .paper .p-head .tag { font-size: .7rem; margin-top: 1px; }
+      .paper .p-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 14px; border: 1px solid #c9cdc9; border-top: 0; padding: 8px 12px; }
+      .paper .p-sec { margin-top: 14px; }
+      .paper .p-secbar { display: flex; justify-content: space-between; gap: 10px; padding: 5px 10px; font-weight: 700; color: #fff; font-size: .88rem; }
+      .paper table.p-table { width: 100%; border-collapse: collapse; border: 1px solid #c9cdc9; }
+      .paper table.p-table td { padding: 4px 8px; border-bottom: 1px solid #e3e6e3; vertical-align: top; }
+      .paper table.p-table tr:last-child td { border-bottom: 0; }
+      .paper td.p-max { width: 34px; text-align: right; color: #666; }
+      .paper td.p-earned { width: 52px; text-align: right; font-weight: 700; }
+      .paper .p-note { display: block; font-style: italic; color: #444; }
+      .paper .p-ref { border: 1px solid #c9cdc9; border-top: 0; padding: 5px 8px; font-size: .78rem; }
+      .paper .p-box { border: 1px solid #c9cdc9; padding: 8px 10px; }
+      .paper .p-actions { min-height: 70px; white-space: pre-wrap; }
+      .paper .p-foot { text-align: right; font-size: .7rem; color: #666; margin-top: 8px; }
+      .paper .appendix img { width: 100%; max-width: 420px; border-radius: 8px; border: 1px solid #c9cdc9; display: block; }
+      .paper .appendix figure { margin: 0 0 14px; padding: 10px; border-bottom: 1px solid #e3e6e3; }
+      .paper .appendix figure:last-child { border-bottom: 0; }
+      .paper .appendix figcaption { font-weight: 700; margin-bottom: 6px; }
+      .paper .appendix figcaption span { font-weight: 400; color: #555; font-size: .78rem; }
+      .share-note { font-size: .9rem; color: var(--dim); margin: 10px 2px 0; }
+
+      .toast {
+        position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom));
+        background: var(--final); color: #fff; border-radius: 10px; padding: 11px 16px;
+        font-size: .92rem; font-weight: 600; z-index: 60; box-shadow: 0 6px 20px rgba(0,0,0,.25);
+        max-width: calc(100vw - 32px); text-align: center;
+      }
+
+      @media (max-width: 520px) {
+        .paper .p-meta { grid-template-columns: 1fr 1fr; }
+        .ref .rrow { flex-direction: column; gap: 0; }
+        .ref dt { width: auto; }
+      }
+      @media print {
+        .no-print { display: none !important; }
+        body { font-size: 12px; }
+        .wrap { max-width: none; padding: 0; }
+        .paper .appendix figure { break-inside: avoid; }
+        .paper .p-sec { break-inside: avoid; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ================= HOME ================= -->
+    <div id="view-home">
+      <div class="brandbar no-print">
+        <div class="inner">
+          <div class="row">
+            <span class="brand">PAPA JOHN'S</span>
+            <span class="form-name">ROIP Inspection Form</span>
+          </div>
+          <p class="tag">Quality · Cleanliness · Training · Safety</p>
+        </div>
+      </div>
+      <main class="wrap" style="padding-top:16px">
+        <div class="panel pad">
+          <p class="kicker">Your store's inspection tool</p>
+          <h1 class="page-title">Hickory <span class="num">#894</span></h1>
+          <p class="sub">For Victoria Nelson, GM. This edition is set to your store — run the full ROIP walk here, and when you finish, send the completed inspection to Eddie.</p>
+        </div>
+
+        <div class="panel pad">
+          <h2 style="margin:0 0 6px;font-size:1rem;font-weight:800">Put this on your home screen</h2>
+          <p style="margin:0 0 6px;font-size:.95rem"><strong>iPhone (Safari):</strong> tap the Share button (the box with an arrow pointing up), then tap <strong>Add to Home Screen</strong>, then <strong>Add</strong>.</p>
+          <p style="margin:0 0 6px;font-size:.95rem"><strong>Android (Chrome):</strong> tap the <strong>⋮</strong> menu, then tap <strong>Add to Home screen</strong> (or <strong>Install app</strong>).</p>
+          <p class="sub" style="font-size:.85rem">The ROIP Tool then sits on your phone like an app — no Muse account or sign-in needed. Your inspection in progress is kept on this phone, so you can pause and pick it back up. This link is your key to it, so keep it on your phone and please don't share it outside the team.</p>
+        </div>
+
+        <div id="home-draft"></div>
+
+        <div class="panel" style="overflow:hidden">
+          <div class="section-bar" style="background:var(--green)"><h2>Start an inspection</h2></div>
+          <div style="padding:16px" class="stack">
+            <div>
+              <p class="kicker" style="margin-bottom:6px">Store</p>
+              <div class="store-lock" aria-label="Your store Hickory number 894, GM Victoria Nelson">
+                <span class="sname">Hickory <span class="num">#894</span></span>
+                <span class="sgm">GM Victoria Nelson · Your store, set for this edition</span>
+              </div>
+            </div>
+            <div id="home-banner"></div>
+            <div>
+              <label class="flabel" for="start-evaluator">Evaluator</label>
+              <input id="start-evaluator" class="field-input" value="Victoria Nelson" autocomplete="name" />
+            </div>
+            <div>
+              <label class="flabel" for="start-mic">MIC</label>
+              <input id="start-mic" class="field-input" value="Victoria Nelson" autocomplete="name" />
+            </div>
+            <div class="grid2">
+              <div>
+                <label class="flabel" for="start-date">Date</label>
+                <input id="start-date" type="date" class="field-input" />
+              </div>
+              <div>
+                <label class="flabel" for="start-timein">Time in</label>
+                <input id="start-timein" type="time" class="field-input" />
+              </div>
+            </div>
+            <button type="button" class="btn primary big" id="btn-begin">Begin inspection</button>
+          </div>
+        </div>
+
+        <div style="margin-top:24px">
+          <h2 style="margin:0 0 8px;font-size:1.1rem;font-weight:800">Finished inspections on this phone</h2>
+          <div id="home-history"></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ================= WALK ================= -->
+    <div id="view-walk" hidden>
+      <div class="walkbar no-print">
+        <div class="inner">
+          <div class="top">
+            <div style="min-width:0">
+              <div class="store">Hickory <span class="num">#894</span></div>
+              <div class="meta" id="walk-meta"></div>
+            </div>
+            <div class="scorebox">
+              <span class="photos-chip" id="walk-photos-chip">📷 0/9</span>
+              <span class="total" id="walk-total">0<span>/100</span></span>
+              <span class="grade" id="walk-grade">F</span>
+            </div>
+          </div>
+          <div class="tabs" id="walk-tabs" role="tablist" aria-label="Inspection sections"></div>
+        </div>
+      </div>
+      <main class="wrap" style="padding-top:14px">
+        <button type="button" class="link-btn no-print" id="btn-pause">← Pause inspection (kept on this phone)</button>
+        <div id="walk-banner" style="margin-bottom:16px"></div>
+        <div id="walk-body"></div>
+        <div class="walk-nav no-print" id="walk-nav"></div>
+      </main>
+    </div>
+
+    <!-- ================= RESULT ================= -->
+    <div id="view-result" hidden>
+      <div class="resultbar no-print">
+        <div class="inner">
+          <button type="button" class="btn" id="btn-result-back">← Back</button>
+          <button type="button" class="btn primary" id="btn-share">📤 Share / send to Eddie</button>
+          <button type="button" class="btn dark" id="btn-print">Print / Save as PDF</button>
+        </div>
+      </div>
+      <main class="wrap" style="padding-top:14px">
+        <p class="share-note no-print" id="share-note">Tap <strong>Share / send to Eddie</strong> to send this finished inspection from your phone — or use Print / Save as PDF and send Eddie the file.</p>
+        <div class="paper" id="paper"></div>
+        <button type="button" class="btn primary big no-print" id="btn-share-2" style="margin-top:18px">📤 Share / send to Eddie</button>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" hidden></div>
+
+    <script>
+      "use strict";
+      /* Form data, guide help, photo spots, and readiness — extracted at build
+         time from the live ROIP Tool's own source files (form.ts, help.ts,
+         photos.ts, readiness.ts), which transcribe the Official 2026 ROIP
+         Form and the ROIP Evaluator's Guide v2026. */
+      var DATA = {"NON_NEGOTIABLES":[{"id":"nn1","label":"Significant disrepair/cleanliness/rodent concerns"},{"id":"nn2","label":"Significant non-compliance in unapproved procedure/dough mgmt/food prep/ingredients"},{"id":"nn3","label":"Training below threshold, no certified MIC, less than 3 MDP certified TMs on the schedule"},{"id":"nn4","label":"Significant unapproved equipment/smallwares in use"},{"id":"nn5","label":"4+ Expired products found in restaurant"}],"SECTIONS":[{"id":"product","title":"Product Quality & Pizza Grading","max":43,"color":"#007a33","items":[{"id":"pq_dough_temp","label":"Dough at correct temperature (all or nothing)","max":3,"group":"Dough management"},{"id":"pq_dough_proofed","label":"Dough properly proofed and all sizes available (all or nothing)","max":3,"group":"Dough management"},{"id":"pq_makeline_temp","label":"Makeline, Refrig., and Walk-in temp","max":3,"group":"Dough management"},{"id":"pq_sauce_temp","label":"In use pizza sauce temp 60º- 84º","max":1,"group":"Dough management"},{"id":"pq_food_prep","label":"Food prep: Product available, store set-up, within shelf life, dated and stored correctly","max":2},{"id":"pq_approved_procedure","label":"Approved product procedure","max":2},{"id":"pq_job_aids","label":"Job Aids","max":2},{"id":"pq_pizza_oc1","label":"Original Crust 1 score","max":5,"group":"Pizza Scores (use grading form below)","half":true},{"id":"pq_pizza_oc2","label":"Original Crust 2 score","max":5,"group":"Pizza Scores (use grading form below)","half":true},{"id":"pq_pizza_esc","label":"Epic Stuffed Crust score","max":5,"group":"Pizza Scores (use grading form below)","half":true},{"id":"pq_pizza_any","label":"Any Gradable Pizza","max":5,"group":"Pizza Scores (use grading form below)","half":true},{"id":"pq_slice_rise","label":"Slice and Rise conducted with MOD (1pt for each criteria)","max":5,"group":"Pizza Scores (use grading form below)"},{"id":"pq_side_items","label":"Side Items Prepared Correctly","max":2}]},{"id":"cleanliness","title":"Cleanliness and Organization","max":36,"color":"#0072bc","items":[{"id":"cl_parking","label":"Parking lot/landscaping (including sidewalks & dumpsters area)","max":1,"group":"Restaurant exterior"},{"id":"cl_building","label":"Building/property condition: Not faded/chipped, no visible holes/damage","max":1,"group":"Restaurant exterior"},{"id":"cl_windows","label":"Windows, windowsills and doors (front, side and back)","max":2,"group":"Restaurant exterior"},{"id":"cl_signage","label":"Signage: Approved, working and in good condition","max":2,"group":"Restaurant exterior"},{"id":"cl_lobby_floors","label":"Lobby floors and floor mats","max":1,"group":"Restaurant interior"},{"id":"cl_lobby_ceiling","label":"Lobby ceiling and vents","max":1,"group":"Restaurant interior"},{"id":"cl_lobby_walls","label":"Lobby walls and front counter","max":2,"group":"Restaurant interior"},{"id":"cl_menu_pop","label":"Menu/POP kit-Clean, properly displayed and current","max":1,"group":"Restaurant interior"},{"id":"cl_pepsi","label":"Pepsi cooler","max":1,"group":"Restaurant interior"},{"id":"cl_prod_floors","label":"Production area floors","max":1,"group":"Restaurant interior"},{"id":"cl_prod_ceiling","label":"Production area ceiling and vents","max":1,"group":"Restaurant interior"},{"id":"cl_prod_walls","label":"Production area walls","max":1,"group":"Restaurant interior"},{"id":"cl_prep_storage","label":"Prep/dry storage area","max":1,"group":"Restaurant interior"},{"id":"cl_restroom","label":"Restroom areas","max":1,"group":"Restaurant interior"},{"id":"cl_cut_table","label":"Cut table and heat racks: Clean, organized and operating properly","max":1,"group":"Equipment"},{"id":"cl_walkin","label":"Walk-in: Walls, floor, ceiling and condenser coils clean and in good repair","max":2,"group":"Equipment"},{"id":"cl_makeline","label":"Makeline & Refrigeration","max":1,"group":"Overall equipment & smallwares"},{"id":"cl_spinner","label":"Spinner","max":1,"group":"Overall equipment & smallwares"},{"id":"cl_smallwares","label":"Smallwares","max":1,"group":"Overall equipment & smallwares"},{"id":"cl_screens","label":"Screens & Disks","max":2,"group":"Overall equipment & smallwares"},{"id":"cl_oven_belt","label":"Oven Belt (Time & Temp)","max":1,"group":"Oven and exhaust hood: Clean and within spec"},{"id":"cl_oven_fingers","label":"Oven Fingers","max":1,"group":"Oven and exhaust hood: Clean and within spec"},{"id":"cl_oven_exterior","label":"Oven Exterior","max":1,"group":"Oven and exhaust hood: Clean and within spec"},{"id":"cl_hood_baffle","label":"Hood Baffle (vents)","max":1,"group":"Oven and exhaust hood: Clean and within spec"},{"id":"cl_hood_ext_int","label":"Hood Exterior & Interior","max":1,"group":"Oven and exhaust hood: Clean and within spec"},{"id":"cl_hvac","label":"HVAC: Good working order, comfortable restaurant temperature","max":2},{"id":"cl_uniforms","label":"Uniforms: Clean and in good condition","max":2,"group":"Team member image"},{"id":"cl_hotbags","label":"Hot bags & car toppers: Clean and in good condition","max":2,"group":"Team member image"}]},{"id":"service","title":"Service, Training and Brand Standards","max":14,"color":"#7c4dbd","items":[{"id":"sv_otd","label":"OTD — Last 60 days","max":5},{"id":"sv_accuracy","label":"Order Accuracy — Last 60 days","max":5},{"id":"sv_tm_describe","label":"TMs can describe marketing promotion in detail","max":1},{"id":"sv_tm_execute","label":"TMs can execute current period promo correctly hands-on","max":1},{"id":"sv_greeting","label":"Customer Greeting: Customer welcomed promptly within 10 seconds","max":1},{"id":"sv_smg","label":"SMG Average Closure Time <24 Hours","max":1}]},{"id":"safety","title":"Food Safety & Sanitation","max":7,"color":"#e87722","items":[{"id":"fs_handsinks","label":"Hand sinks, soap dispensers and paper towel dispensers are in place and in working condition at all required areas and hand washing is occurring","max":1},{"id":"fs_pest","label":"Pest control service is established and scheduled at least quarterly","max":1},{"id":"fs_sink","label":"3-Compartment sink fully functional, including hot water, and stocked. No unapproved chemicals in the restaurant. Utensils and surfaces are cleaned and sanitized.","max":1},{"id":"fs_thermometers","label":"Thermometers are available and calibrated.","max":1},{"id":"fs_health_report","label":"Local Authority Government / Health Inspection Report Available and critical items are resolved","max":1},{"id":"fs_dough_trays","label":"Dough trays are not being used for standing, shelving or product storage","max":1},{"id":"fs_food_stored","label":"Food Stored 6 inches from flooring","max":1}]}],"STORES":[{"number":"533","name":"Boone","gm":"Zac Harvey"},{"number":"856","name":"Morganton","gm":"Adam Brown"},{"number":"894","name":"Hickory","gm":"Victoria Nelson"},{"number":"1676","name":"Lenoir","gm":"Katie McCoy"},{"number":"1688","name":"Statesville","gm":"Sarah Sellie"},{"number":"2027","name":"Newton","gm":"Chris Hinchee"},{"number":"2338","name":"Wilkesboro","gm":"Devon Auton"},{"number":"4549","name":"Granite Falls","gm":"Abigail Hernandez-Ibanez"},{"number":"140","name":"Tell City","gm":"Jason Johnson"},{"number":"4124","name":"Sellersburg","gm":"Matt McRae"}],"ITEM_HELP":{"nn1":{"guide":"Significant disrepair/cleanliness/rodent concerns (-10 points)","points":["This penalty is for a systemic breakdown in process — cleanliness issues present throughout the majority of the restaurant, extreme cases of neglect in parts of the restaurant, or the presence of rodents.","Any required shutdown of restaurant operations during an ROIP visit results in an automatic ROIP failure."]},"nn2":{"guide":"Significant non-compliance in unapproved procedures, dough management, food prep, or ingredients (-10 points)","points":["Deducted for systemic or extreme non-compliance — for example, dough pre-slapped and left overnight in the walk-in, or a restaurant setting its own standard. A single pizza they forgot to dock is not systemic.","Examples: “flip & fill” with date extension, date manipulation such as double dating, two sizes of expired dough or two sizes of Day 0, 1, or 2 dough in production, pre-made skins or sides in the walk-in.","Also: adding unapproved items to the menu, cutting down dough sizes, dough with bags covering the skins, 10+ items missing dates, making your own sauce cups, or selling items not sourced from the QCC."]},"nn3":{"guide":"Training deficiencies (-10 points)","points":["The Manager in Charge (MIC) must be MDP certified.","PIZZAcademy training completion needs to be ≥ 75%.","At least three MDP-certified team members must be on the current schedule."]},"nn4":{"guide":"Significant unapproved equipment/smallwares in use (-10 points)","points":["Deducted for systemic or extreme non-compliance — purchasing an unapproved oven would warrant it; a singular FIFO bottle would not.","Triggers include: an unapproved, non-PJI model oven; an unapproved/non-PJI makeline purchased after May 2026; more than 5 unapproved smallwares observed in production; more than 10 unapproved smallwares in the restaurant."]},"nn5":{"guide":"4+ expired products found (-10 points)","points":["Expired products must be discarded.","All food items (each “SKU”) count individually — two cases of pepperoni and one lexan of pepperoni still count as 1 expired product.","Expired dough is marked under the dough management and dough temperature categories, not this one.","Expired Pepsi found in a consumer-facing Pepsi cooler counts under this category as a single item."]},"pq_dough_temp":{"guide":"Dough Temperature – 3 Points","points":["Scored all or nothing: if any one size dough ball does not meet the standard, no points will be awarded.","Temperature requirements: Production Dough 50–60°F; 8″ Dough 38–50°F.","Each dough size sold must be evaluated. If the restaurant is out of a particular size, no points are awarded.","All points are lost if any expired dough is used, or if thermometers are not available in the restaurant. Dough found on a heat rack, oven, or near any heat source to artificially raise its temperature also earns no points.","Use a clean, sanitized, and calibrated stem thermometer inserted horizontally into the center of the dough ball, and record the temperature after 30 seconds.","If the first reading is outside the acceptable range, coach on dough management/rotation and take the temperature once more before the end of the ROIP."]},"pq_dough_proofed":{"guide":"Dough Properly Proofed and All Sizes Available – 3 Points","points":["Scored all or nothing: if any one size dough ball does not meet the standard or is missing, no points will be awarded.","Thin Crust, Pan Pizza, and Gluten Free LTO dough are not scored in this section.","Racked dough is limited to 30 minutes — dried, cracked skins are evidence it has been out past that limit, and points should be taken if it is used beyond it.","Expired dough is not permitted in the restaurant and needs to be discarded. Pushing expired trays to the back of the restaurant with a note is still out of compliance — and all points are lost if any expired dough is used.","Use of Day 0, 1, or 2 dough will result in a loss of points."]},"pq_makeline_temp":{"guide":"Makeline (Top and Bottom), Refrigeration, and Walk-in Temperature – 3 Points","points":["This category covers any refrigeration in the restaurant holding items required to be refrigerated — including under-counter cut-station refrigeration. Pepsi coolers are not included.","Refrigerated food must be maintained at 33°F–40°F.","Check at least one product each from the makeline top, makeline bottom, walk-in, and any other refrigeration. Pick products with a liquid first (e.g., black olives, banana peppers) for the quickest, most accurate readings — and record Top, Bottom, and Walk-in in the fields above.","If the first product tested in a zone is out of range, test at least 2 additional items in that same zone. If another item in the zone is also out of range, deduct all points."]},"pq_sauce_temp":{"guide":"In-Use Pizza Sauce Temperature: 60°F–84°F – 1 Point","points":["Take the temperature with a clean, sanitized, and calibrated thermometer, inserted 1″ to 1.5″ into the pizza sauce — the sauce in use on the makeline.","Wait one minute before recording the reading, and enter it in the Sauce temp field above.","Expired sauce does not receive temperature points."]},"pq_food_prep":{"guide":"Food Prep: Available, set-up, within shelf life, dated, and stored correctly – 2 Points","points":["A critical food-safety procedure, also checked during Health Department inspections and routine follow-up visits. Use product in the order received: First In, First Out (FIFO). Applies to all products in the restaurant, at every stage of storage and production.","In-use products must be correctly dated and timed, and a prepped expiration date cannot exceed the unopened expiration date. If a product is missing dates, review invoices and restaurant transfers to determine if it is within shelf life.","No open bags in the walk-in or under the makeline — once opened, product must be transferred into a Lexan. All frozen product must be properly thawed by time of use.","Prep left out of refrigeration that has exceeded temperature limits results in 0 points.","The makeline must be set up by time of opening and must not be broken down until time of closing. The restaurant must not be out of more than one product on the menu."]},"pq_approved_procedure":{"guide":"Approved Product Procedure – 2 Points","points":["This section is intended to coach all procedures observed during an ROIP. Examples include, but are not limited to:","No touching pepperoncini with bare hands, and no touching of any cooked product with bare hands.","Correct amount of docker passes and proper procedure (center-outward docking passes). Thin and GF crust in production stored at room temperature.","Dustinator not excessively compromised or being reused; pizzas cut and packaged according to standard; correct post-bake application procedures (no under-/over-portioning); portioning cups in use; no systematic over-topping.","Pan Pizzas require edge-to-edge toppings and Italian seasoning. No storing sauces in production in unapproved locations (e.g., icing stored on top of the oven)."]},"pq_job_aids":{"guide":"Job Aids – 2 Points","points":["All required job aids listed in the Job Aid Guide are present, current (per version date), in good condition, and visibly posted or readily accessible at the station where the task is performed.","Version dates must match the most current version in the guide; job aids get a 1-month grace period to be updated after a new version is released before points are lost.","Job aids must be clean, legible, and undamaged, and may not be placed inside the Makeline lid or anywhere that creates a food safety or sanitation risk.","Any previous job aids related to recipe/products must be removed from all relevant points of operation."]},"pq_pizza_oc1":{"guide":"Pizza Scores: 25 Points (Grading Worksheet, Appendix A)","points":["Each pizza is graded out of 10 points, then converted to the 5-point scale: 9–10 → 5 pts, 8–8.5 → 4 pts, 7.5 & below → 0 pts.","Cut (1 pt): slices are fully cut through. Bake/Crust (1 pt): 75% golden bake, ≤25% dirty crust, proper shape; Original Crust width cannot exceed 1.25″ (ESC 1.5″).","Cheese Coverage (2 pts): 75%+ coverage, bubbles under 1″. Cheese Lock (2 pts): 75%+ lock, bubbles under 1″.","Topping Distribution (4 pts): scored per slice at 0.50 pts each and must meet portioning standards — cut toppings are added up across the slice, and 4.5 or more pepperoni slices rounds up to 5.","Expired dough used for scoring = 0 points for all pizzas. If the evaluator's pre-ordered pizza is made incorrectly, topping points are automatically deducted and the pizza fails."]},"pq_pizza_oc2":{"guide":"Pizza Scores: 25 Points (Grading Worksheet, Appendix A)","points":["Each pizza is graded out of 10 points, then converted to the 5-point scale: 9–10 → 5 pts, 8–8.5 → 4 pts, 7.5 & below → 0 pts.","Cut (1 pt): slices are fully cut through. Bake/Crust (1 pt): 75% golden bake, ≤25% dirty crust, proper shape; Original Crust width cannot exceed 1.25″ (ESC 1.5″).","Cheese Coverage (2 pts): 75%+ coverage, bubbles under 1″. Cheese Lock (2 pts): 75%+ lock, bubbles under 1″.","Topping Distribution (4 pts): scored per slice at 0.50 pts each and must meet portioning standards — cut toppings are added up across the slice, and 4.5 or more pepperoni slices rounds up to 5.","Expired dough used for scoring = 0 points for all pizzas. If the evaluator's pre-ordered pizza is made incorrectly, topping points are automatically deducted and the pizza fails."]},"pq_pizza_esc":{"guide":"Pizza Scores: 25 Points (Grading Worksheet, Appendix A)","points":["Each pizza is graded out of 10 points, then converted to the 5-point scale: 9–10 → 5 pts, 8–8.5 → 4 pts, 7.5 & below → 0 pts.","Cut (1 pt): slices are fully cut through. Bake/Crust (1 pt): 75% golden bake, ≤25% dirty crust, proper shape; Epic Stuffed Crust width cannot exceed 1.5″ (Original Crust 1.25″).","Cheese Coverage (2 pts): 75%+ coverage, bubbles under 1″. Cheese Lock (2 pts): 75%+ lock, bubbles under 1″.","Topping Distribution (4 pts): scored per slice at 0.50 pts each and must meet portioning standards — cut toppings are added up across the slice, and 4.5 or more pepperoni slices rounds up to 5.","Expired dough used for scoring = 0 points for all pizzas. If the evaluator's pre-ordered pizza is made incorrectly, topping points are automatically deducted and the pizza fails."]},"pq_pizza_any":{"guide":"Pizza Scores: 25 Points (Grading Worksheet, Appendix A)","points":["Any gradable pizza on the menu can be scored here. Each pizza is graded out of 10 points, then converted to the 5-point scale: 9–10 → 5 pts, 8–8.5 → 4 pts, 7.5 & below → 0 pts.","Cut (1 pt): slices are fully cut through. Bake/Crust (1 pt): 75% golden bake, ≤25% dirty crust, proper shape; Original Crust width cannot exceed 1.25″ (ESC 1.5″).","Cheese Coverage (2 pts): 75%+ coverage, bubbles under 1″. Cheese Lock (2 pts): 75%+ lock, bubbles under 1″.","Topping Distribution (4 pts): scored per slice at 0.50 pts each and must meet portioning standards — cut toppings are added up across the slice, and 4.5 or more pepperoni slices rounds up to 5.","Expired dough used for scoring = 0 points for all pizzas. If the evaluator's pre-ordered pizza is made incorrectly, topping points are automatically deducted and the pizza fails."]},"pq_slice_rise":{"guide":"Slice & Rise (conducted with the MIC)","points":["One point for each of the five criteria, evaluated with the Manager in Charge.","Center Volume (1 pt): 3/8″ – 1/2″. Edge Height & Width (1 pt): height 7/8″ – 1″, width 1″ – 1¼″.","Top Crust Color (1 pt) and Bottom Crust Color (1 pt): within the acceptable range in the Slice & Rise Toolkit resources.","Cell Structure & Slice Profile (1 pt): fairly open and even cell structure, a uniform gradient from edge to center, and no gel line.","Deduct the cell structure point if the restaurant does not have the required full Slice & Rise Kit (including the blade) — a full review of the criteria is not possible without it."]},"pq_side_items":{"guide":"Side items prepared correctly – 2 Points","points":["Covers all current and future sides on the menu: Sandwiches, Papa Bites, Papa Bowls, Bread Sticks, Garlic Parm Bread Sticks, Garlic Knots, Wings, and all cheesestick variations — each prepared according to standards.","Check the details: Are Garlic Knots knotted? Is chicken given the correct number of pieces? Are sides receiving the correct cut-table application/procedure? Are sides made with the correct dough size?"]},"cl_parking":{"guide":"Parking Lot & Landscaping (Including Sidewalks & Dumpster Area) – 1 Point","points":["The area you're responsible for depends on location type: multi-unit — the sidewalk and space directly in front of the restaurant (partial parking spaces within that boundary fully included); end-cap — front sidewalk, side, back areas, and drive-thru lane; standalone — the entire property, including all parking spaces, landscaping, sidewalks, and drive-thru lane.","No excessive cigarette butts, trash, debris, or weeds (4+ for multi-unit & end-cap, 6+ for standalone).","Sidewalks and curbs must be free of major cracks or crumbling concrete that pose safety risks.","Dumpster area must be clean, with no overflowing waste or excessive debris, and the dumpster corral in good condition.","Parking lot lines should not be faded or missing — unbroken and visible."]},"cl_building":{"guide":"Building/Property Condition: Not faded/chipped, no visible holes or damage – 1 Point","points":["Walls must be in good repair with no excessive paint discoloration, chipping, graffiti, or damage.","Exterior lights must be clean, functional, and on at night.","Soffits and awnings, if present, must be intact, clean, and free of major holes. No excessive mildew buildup.","If a drive-thru is present, the drive-thru bell must be operational. If an exterior trash can is present, it must be clean, lined, and not overflowing."]},"cl_windows":{"guide":"Windows, Windowsills, and Doors (front, side, and back) – 2 Points","points":["Customer-facing doors, thresholds, windows, and sills must be free of dust, debris, excessive streaks, and tape residue.","Doors must function properly, remain unlocked during operating hours, and have a “door sweep” to prevent pests.","Pass-through windows must be clean and in working condition. Windows should have no cracks and be in good condition."]},"cl_signage":{"guide":"Signage: Approved, working, and in good condition – 2 Points","points":["All exterior signage must be in good condition and match approved branding (pole signs, building signs, awnings, open/neon signs if in use). The former logo is acceptable on permanent signage if in good condition and clean.","If a reader board is available, an appropriate message should be written. If signage is updated, all signs must match and be updated.","Signs must be free of stains, dirt buildup, and broken or damaged lettering, and all bulbs must be functional.","Any operator-produced signage must be professionally printed with the current logo."]},"cl_lobby_floors":{"guide":"Lobby Floors and Floor Mats – 1 Point","points":["Includes all customer-accessible areas such as floors, baseboards, and rugs. No broken tiles or cracks larger than a quarter.","Allow acceptable tolerance for the current day's weather conditions, but no visible buildup should be present.","Mats must be in good condition, free of rips, tears, and excessive fading, with an updated logo (if a logo is present).","Approved benches, chairs, or other seating furniture must be in good condition, intact, and free of dust, stains, dirt, fading, or rust."]},"cl_lobby_ceiling":{"guide":"Lobby Ceiling and Vents – 1 Point","points":["Ceiling tiles, grids, vents, diffusers, light lenses, and bulbs must be in good condition, intact, and free of dust, stains, dirt, or rust. There should be no holes in the ceiling.","Cameras must be clean and in good condition, with no exposed wiring. All lights must be operational and free of bugs or debris.","This is the only ceiling in the restaurant approved to have stippled (textured) ceiling tiles."]},"cl_lobby_walls":{"guide":"Lobby Walls and Front Counter – 2 Points","points":["The front counter and all related components (terminals, credit card readers, etc.) must be clean, functional, organized, and up to date.","Counter, dough show glass, and walls must be free of fading, tape, cracks, smudges, or holes larger than a quarter.","Any additional interior signs, awards, permits, or non-menu TVs must be clean, functional, up to date, and in good condition."]},"cl_menu_pop":{"guide":"Menu/POP Kit: Clean, properly displayed, and current – 1 Point","points":["Menu boards are not required, but if present they must be clean and up to date with the current LTO and current menu. No outdated or expired promotional materials.","Menus may include magnet boards, QR code menus, counter placemats, TVs, or other digital forms.","Unapproved or damaged menu boards and POP kits are not allowed; all must be clean and in good condition. Window clings should not have visible, excessive air bubbles.","Printed menus get a 6-month grace period after menu updates/removals before loss of point."]},"cl_pepsi":{"guide":"Pepsi Cooler – 1 Point","points":["Must be in working condition, clean, and free of streaks or buildup — including gaskets, plastic dividers, and the top of the cooler.","No expired product: expired Pepsi is marked against this question, and if it's in a consumer-facing cooler it also counts toward the 4+ “expired products” Non-Negotiable.","Stock based on sales volume while preventing empty rows — front-facing, without empty rows or gaps. Any consumer-facing Pepsi cooler must contain only Pepsi product.","Pepsi delivery challenges warrant further investigation, and points should be awarded if the restaurant is not at fault."]},"cl_prod_floors":{"guide":"Production Area Floors – 1 Point","points":["Includes floors under, around, and behind the makeline, oven, and cut table.","Floors, baseboards, and mats (optional) must be free of excessive sauce, food, water, or buildup.","No cracks that can collect debris. Holes larger than a quarter are not acceptable."]},"cl_prod_ceiling":{"guide":"Production Area Ceilings and Vents – 1 Point","points":["Ceiling tiles, grids, vents, diffusers, light lenses, and bulbs must be in good condition, intact, and free of dust, stains, dirt, or rust.","All lights must be operational and free of bugs. No yellowing on the ceiling or walls.","Stippled ceilings (textured and potentially absorbent) are not permitted in the production area."]},"cl_prod_walls":{"guide":"Production Area Walls – 1 Point","points":["Walls must be clean, uniform in color, have no rust, debris, or dust, be free of unpatched holes, and in good condition.","No excessive sauce buildup."]},"cl_prep_storage":{"guide":"Prep & Dry Storage Area – 1 Point","points":["The prep area must be clean and free of buildup. Dry storage shelves must be clean and organized.","Floors, ceiling, baseboards, and walls must be in good repair and free of buildup, stains, cracks, or missing tiles."]},"cl_restroom":{"guide":"Restroom Areas – 1 Point","points":["Toilet, sink, and mirror must be clean, fully stocked, and operational.","Walls, floors, ceiling, and shelving must be clean and in good condition.","All dispensers (paper towels, toilet paper, soap/sanitizer) must be operational, stocked, and using antibacterial soap.","Hot water must be functional in all sinks, and toilet paper must be properly placed on the roll."]},"cl_cut_table":{"guide":"Cut Table and Heat Racks – 1 Point","points":["Must be clean, organized, in good structural condition, and operating properly. The top of the heat rack and shelving under the grates should have no buildup.","Grates are required and must be intact — deduct the point if more than 25% of bars are missing.","Heat racks must be in use, with at least one entire unit (all racks within a structure) in full working condition. Verify functionality for all, though not all levels need to be on at a given time.","Lexans used for storage must be dated, within shelf life, and clean. Any container used for screen/disk storage must be clean, in good condition, and 6 inches off the floor.","Monitors, fans, or electronics near the cut station must be clean, organized, and in good repair. Fans may not be pointed at any food surface or production area — a consistent expectation throughout the restaurant."]},"cl_walkin":{"guide":"Walk-in: Clean and in good repair – 2 Points","points":["Must be clean and in good repair, including all surfaces: walls, ceiling, lights, light covers, shelving, seals, floors, grates, gaskets, curtains, and refrigeration components.","A calibrated thermometer must be present inside, or built in outside, the walk-in.","No buildup of dust, dirt, mold, pooling water, or rust, including on condenser coils and plumbing.","The walk-in door and handle must be functional, fully open/close, and clean, and the door must seal airtight when closed. Holes may not be larger than a quarter. Gaskets and curtains must be free of mold, rips, and tears.","Any personal food must be stored in a separate labeled container and below PJI product."]},"cl_makeline":{"guide":"Makeline & Refrigeration – 1 Point","points":["Top: Lexans, gaskets, and handles must be clean and functional. Bottom: gaskets and doors fully intact, no pooling water, condenser clean.","No more than 25% of makeline grate bars may be missing. The makeline monitor and keyboard must be clean and free of excessive buildup.","Makelines purchased before May 2026 that meet these criteria receive points; makelines purchased after May 2026 must be approved by Papa Johns to receive points.","All equipment and smallwares used in production must be approved. Authorized variance: unapproved under-counter refrigeration can still receive points if it is within temperature and UL/NSF or ETL certified."]},"cl_spinner":{"guide":"Spinner – 1 Point","points":["If a restaurant does not have a spinner, it receives the point.","A spinner in production must be clean, in good repair, and set properly with a counter-weight cable. Spinner settings should be at 9.2.","The carpet must be intact and free of buildup, with no missing or damaged corner pieces."]},"cl_smallwares":{"guide":"Smallwares – 1 Point","points":["Approved smallwares (see the Smallware Resource Guide) should be clean and in good condition.","Out-of-compliance examples include worn-down approved dockers or unapproved dockers, incorrectly cut bottle tips, and bent approved pizza cutters.","The restaurant should have sufficient smallwares available to service its customers."]},"cl_screens":{"guide":"Screens & Disks – 2 Points","points":["Screens and disks should be free of dents, with minimal carbon build-up.","If 10% of the restaurant's screen supply has more than ¼ of heavy carbonization on them, the points are deducted."]},"cl_oven_belt":{"guide":"Oven Belt (Time & Temperature) – 1 Point","points":["Ovens must be properly calibrated prior to an ROIP to receive points. Any variance from specification must be supported by technician documentation or proof of a scheduled service visit.","The belt must be properly tensioned, correctly fed into the cavity, and free of excessive buildup, and set to the correct time and temperature (see the Oven Resource Guide).","Properly tensioned is about 2 inches of slack — the belt should not be able to touch the bottom of the eyebrows when pulled."]},"cl_oven_fingers":{"guide":"Oven Fingers – 1 Point","points":["Fingers must be free of excessive buildup and placed correctly.","Ovens must be properly calibrated prior to an ROIP to receive points; any variance from specification needs technician documentation or proof of a scheduled service visit."]},"cl_oven_exterior":{"guide":"Oven Exterior – 1 Point","points":["The oven exterior — including eyebrows, windows, fan filters, and crumb trays, if applicable — should be clean, with no excessive discoloration or buildup.","Eyebrows need to be set at the correct height."]},"cl_hood_baffle":{"guide":"Hood Baffle (Vents) – 1 Point","points":["Baffles must be correctly positioned and free of discoloration or excessive buildup.","Conduct a suction test: place parchment paper against the vent and verify that it holds."]},"cl_hood_ext_int":{"guide":"Hood Exterior & Interior – 1 Point","points":["The exterior and interior of the hood should be free of discoloration or excessive buildup.","Lights, including light covers, should be present, clean, and functioning."]},"cl_hvac":{"guide":"HVAC – 2 Points","points":["HVAC must be in good working order, with a comfortable restaurant temperature.","The temperature must not exceed 85°F, as some product is not approved to be stored above 85°F."]},"cl_uniforms":{"guide":"Uniforms – 2 Points","points":["Hat, shoes, pants, shirt, and apron must be clean, current, and in good condition."]},"cl_hotbags":{"guide":"Hot Bags & Car Toppers – 2 Points","points":["Must be clean, current, in use, and in good condition, with sufficient inventory maintained (car toppers apply only if used).","Restaurants without PJI hot bags need hot bags provided by DoorDash, held to the same standard. Deduct points if a restaurant is absent of any hot bags."]},"sv_otd":{"guide":"Out the Door (OTD Time) – 5 Points","points":["All Service metrics are pulled during the time of the evaluation, on a 60-day rolling basis.","Score from the OTD table shown above, using the restaurant's average Out the Door time over the last 60 days: ≤18 min earns the full 5 points."]},"sv_accuracy":{"guide":"SMG Order Accuracy – 5 Points","points":["SMG metrics are viewed year over year (YOY) on a 60-day rolling basis based on the survey date.","Any restaurant can achieve a maximum of 5 points. A restaurant that has shown improvement year over year receives an additional 1 point, not to exceed 5 total points.","Score from the Order Accuracy table shown above, using the last 60 days."]},"sv_tm_describe":{"guide":"Team members can describe marketing promotion in detail – 1 Point","points":["Team members know which LTO is featured and can describe the product.","If the current promotion is a marketing promotion without product innovation (e.g., LG 1-topping for $9.99), team members need to be able to reference the exact promotion."]},"sv_tm_execute":{"guide":"Team Members can execute current period promotion correctly hands on – 1 Point","points":["Team members can correctly execute the current promotion, hands on.","If the current period promotion isn't a product, an additional side item will be evaluated under this category."]},"sv_greeting":{"guide":"Customer Greeting: Customer welcomed promptly – 1 Point","points":["Guests entering the restaurant should be greeted within 10 seconds."]},"sv_smg":{"guide":"SMG average closure time is less than 24 hours (last 60 days) – 1 Point","points":["Closure time is evaluated on the day of the visit, determined by the last 60 days.","It should include solicited, unsolicited, and close-the-loop feedback."]},"fs_handsinks":{"guide":"Hand sinks, soap dispensers, and paper towel dispensers in place and working – 1 Point","points":["Sinks and dispensers must be in place, fully stocked, and in working condition in all required areas, and proper hand washing must be occurring. Soap should be anti-bacterial.","Hand washing must be observed during the visit: 20 seconds with soap (not sanitizer) and running water, as hot as comfortably possible. If hot water is not available, no points are awarded.","Team members must wash hands after handling tills, phones, or non-work surfaces, or touching their faces. If gloves are in use, they must be changed when hands would be rewashed."]},"fs_pest":{"guide":"A pest control service is established and scheduled at least quarterly – 1 Point","points":["The most recent invoice must be available and dated within 3 months of the inspection.","Paper or digital copies are acceptable and must be available."]},"fs_sink":{"guide":"3-compartment sink fully functional and stocked – 1 Point","points":["Team members are knowledgeable about how to set up the 3-compartment sink. There must be no unapproved chemicals in the restaurant, and utensils and surfaces must be cleaned and sanitized.","The sink must be clean, organized, and free of buildup, with soap and sanitizer dispensers stocked and in working order, floor drains clear and clean, and the grease trap functioning and clean.","Hot water must be functional and verified by the evaluator. Test strips must be available to check sanitation concentration and must not be expired.","“Today's dirt/dishes” are acceptable, to avoid disrupting operations during the evaluation."]},"fs_thermometers":{"guide":"Thermometers (2 or more) are available and calibrated – 1 Point","points":["Two or more thermometers must be available and calibrated, from an approved supplier."]},"fs_health_report":{"guide":"Local Authority Government / Health Inspection Report available – 1 Point","points":["The report must be available and critical items resolved. Anything older than 30 days should have been resolved by the time of the ROIP visit.","Digital copies are acceptable in jurisdictions where they are not required to be kept on the premises."]},"fs_dough_trays":{"guide":"Dough trays are not being used for standing, shelving, or product storage – 1 Point","points":["Dough trays are used for storing dough only. This includes thin crust, GF, and Pan Pizzas."]},"fs_food_stored":{"guide":"Food stored 6 inches from flooring – 1 Point","points":["This includes food and food-contact products such as breadstick trays, pan liners, etc."]}},"PHOTO_SPOTS":[{"id":"storefront","label":"Storefront","slots":1,"placement":"nn"},{"id":"dough","label":"Dough","slots":3,"placement":"product"},{"id":"sauce_station","label":"Sauce station","slots":1,"placement":"product"},{"id":"makeline","label":"Makeline","slots":1,"placement":"product"},{"id":"walkin","label":"Walk-in cooler","slots":1,"placement":"cleanliness"},{"id":"oven","label":"Oven","slots":1,"placement":"cleanliness"},{"id":"cut_table","label":"Cut table","slots":1,"placement":"cleanliness"}],"TOTAL_PHOTO_SLOTS":9,"READINESS_BY_STORE":{"140":{"startingRoip":90,"avgOtdMin":33.21,"otdReduction":5,"orderAccuracyPct":71.01,"accuracyReduction":4,"smgClosureHrs":37.05,"closureReduction":1},"533":{"startingRoip":95,"avgOtdMin":25.36,"otdReduction":5,"orderAccuracyPct":83.56,"accuracyReduction":0,"smgClosureHrs":4.61,"closureReduction":0},"856":{"startingRoip":96,"avgOtdMin":21.07,"otdReduction":4,"orderAccuracyPct":86.08,"accuracyReduction":0,"smgClosureHrs":9.65,"closureReduction":0},"894":{"startingRoip":93,"avgOtdMin":19.5,"otdReduction":2,"orderAccuracyPct":72.22,"accuracyReduction":5,"smgClosureHrs":8.11,"closureReduction":0},"1676":{"startingRoip":92,"avgOtdMin":24.37,"otdReduction":5,"orderAccuracyPct":73.68,"accuracyReduction":3,"smgClosureHrs":18.21,"closureReduction":0},"1688":{"startingRoip":94,"avgOtdMin":22.69,"otdReduction":5,"orderAccuracyPct":84.29,"accuracyReduction":0,"smgClosureHrs":72.27,"closureReduction":1},"2027":{"startingRoip":98,"avgOtdMin":19.86,"otdReduction":2,"orderAccuracyPct":77.78,"accuracyReduction":0,"smgClosureHrs":8.96,"closureReduction":0},"2338":{"startingRoip":95,"avgOtdMin":24.2,"otdReduction":5,"orderAccuracyPct":83.08,"accuracyReduction":0,"smgClosureHrs":16.42,"closureReduction":0},"4124":{"startingRoip":95,"avgOtdMin":26.16,"otdReduction":5,"orderAccuracyPct":82.35,"accuracyReduction":0,"smgClosureHrs":20.75,"closureReduction":0},"4549":{"startingRoip":90,"avgOtdMin":23.92,"otdReduction":5,"orderAccuracyPct":67.86,"accuracyReduction":5,"smgClosureHrs":20.97,"closureReduction":0}},"READINESS_PULL":{"windowLabel":"Last 60 days ending Nov 6, 2026","pulledLabel":"Pulled Nov 7, 2026","sourceLabel":"Store Analytics ROIP Readiness"}};
+    </script>
+    <script>
+      "use strict";
+      /* ============================================================
+         ROIP Tool — Manager Edition · Hickory #894 (static)
+         Store locked to Hickory; the in-progress inspection and the
+         finished inspections live on this phone (localStorage).
+         Photos are downscaled to JPEG on capture before storing.
+         ============================================================ */
+      var NN = DATA.NON_NEGOTIABLES;
+      var SECTIONS = DATA.SECTIONS;
+      var HELP = DATA.ITEM_HELP;
+      var SPOTS = DATA.PHOTO_SPOTS;
+      var TOTAL_SLOTS = DATA.TOTAL_PHOTO_SLOTS;
+      var READY = DATA.READINESS_BY_STORE["894"];
+      var READY_PULL = DATA.READINESS_PULL;
+      var STORE = { number: "894", name: "Hickory", gm: "Victoria Nelson" };
+      var NN_COLOR = "#b3001b";
+      var GREEN = "#007a33";
+      var FINAL_COLOR = "#262626";
+      var HALF_ITEMS = { pq_pizza_oc1: 1, pq_pizza_oc2: 1, pq_pizza_esc: 1, pq_pizza_any: 1 };
+      var ITEM_MAX = {};
+      SECTIONS.forEach(function (s) { s.items.forEach(function (it) { ITEM_MAX[it.id] = it.max; }); });
+
+      var DRAFT_KEY = "roip-hickory-draft-v1";
+      var HISTORY_KEY = "roip-hickory-history-v1";
+
+      /* ---------------- state ---------------- */
+      var working = null;      // in-progress inspection object
+      var step = 0;            // 0 = NN, 1..4 = sections; step 5 = finish (view "finish" flag)
+      var onFinish = false;
+      var resultRecord = null; // inspection shown in result view
+      var ui = { notesOpen: {}, helpOpen: {}, photoBusy: {}, photoErr: {}, discardArm: false };
+
+      function emptyData() {
+        return { scores: {}, notes: {}, violations: [], temps: { top: "", bottom: "", walkin: "", sauce: "" }, actionItems: "" };
+      }
+      function pad(n) { return String(n).padStart(2, "0"); }
+      function dateInputValue(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+      function timeInputValue(d) { return pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+      function fmtDateFromStr(s) {
+        var d = new Date(s + "T12:00:00");
+        return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      }
+      function fmtDateTime(iso) {
+        var d = new Date(iso);
+        return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
+          " · " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      }
+      function fmtPts(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
+      function esc(s) {
+        return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+
+      function sectionSubtotal(data, section) {
+        var sum = 0;
+        section.items.forEach(function (it) { sum += data.scores[it.id] || 0; });
+        return Math.min(sum, section.max);
+      }
+      function computeTotal(data) {
+        var sum = 0;
+        SECTIONS.forEach(function (s) { sum += sectionSubtotal(data, s); });
+        sum -= data.violations.length * 10;
+        return Math.max(0, sum);
+      }
+      function gradeFor(total) {
+        if (total >= 90) return { letter: "A", label: "Very Good" };
+        if (total >= 80) return { letter: "B", label: "Acceptable" };
+        if (total >= 70) return { letter: "C", label: "Marginal" };
+        return { letter: "F", label: "Operations Fail" };
+      }
+      function gradeColor(total) {
+        var l = gradeFor(total).letter;
+        return l === "A" ? "#007a33" : l === "B" ? "#0072bc" : l === "C" ? "#e87722" : "#b3001b";
+      }
+      function otdPrefill() { return Math.min(5, Math.max(0, 5 - READY.otdReduction)); }
+      function accPrefill() { return Math.min(5, Math.max(0, 5 - READY.accuracyReduction)); }
+      function spotLabel(spotId, idx) {
+        var sp = null;
+        SPOTS.forEach(function (s) { if (s.id === spotId) sp = s; });
+        if (!sp) return spotId;
+        return sp.slots > 1 ? sp.label + " " + (idx + 1) : sp.label;
+      }
+      function photosTakenCount(w) { return Object.keys(w.photos).length; }
+      function missingPhotos(w) {
+        var missing = [];
+        SPOTS.forEach(function (sp) {
+          for (var i = 0; i < sp.slots; i++) {
+            if (!w.photos[sp.id + ":" + i]) missing.push({ spotId: sp.id, slotIndex: i });
+          }
+        });
+        return missing;
+      }
+
+      /* ---------------- persistence ---------------- */
+      var saveTimer = null;
+      function saveDraft() {
+        if (!working) return;
+        try {
+          localStorage.setItem(DRAFT_KEY, JSON.stringify(working));
+        } catch (e) {
+          showToast("This phone's storage is full — photos may not be kept. Finish and share this inspection soon.");
+        }
+      }
+      function saveDraftSoon() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(saveDraft, 400);
+      }
+      function loadDraft() {
+        try {
+          var raw = localStorage.getItem(DRAFT_KEY);
+          return raw ? JSON.parse(raw) : null;
+        } catch (e) { return null; }
+      }
+      function clearDraft() {
+        try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+      }
+      function loadHistory() {
+        try {
+          var raw = localStorage.getItem(HISTORY_KEY);
+          var list = raw ? JSON.parse(raw) : [];
+          return Array.isArray(list) ? list : [];
+        } catch (e) { return []; }
+      }
+      function saveHistory(list) {
+        try {
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+          return true;
+        } catch (e) {
+          // Quota: drop appendix photos from the oldest entries, keep scores.
+          var trimmed = list.map(function (r, i) { return i === 0 ? r : Object.assign({}, r, { photos: {} }); });
+          try { localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed)); return true; } catch (e2) { return false; }
+        }
+      }
+
+      /* ---------------- toast ---------------- */
+      var toastTimer = null;
+      function showToast(msg) {
+        var t = document.getElementById("toast");
+        t.textContent = msg;
+        t.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { t.hidden = true; }, 3600);
+      }
+
+      /* ---------------- shared fragments ---------------- */
+      function bannerHTML() {
+        var rows = [
+          { label: "OTD", detail: "Avg OTD " + READY.avgOtdMin.toFixed(2) + " min", red: READY.otdReduction },
+          { label: "Order Accuracy", detail: READY.orderAccuracyPct.toFixed(2) + "%", red: READY.accuracyReduction },
+          { label: "SMG Closure", detail: "Avg closure " + READY.smgClosureHrs.toFixed(2) + " hrs", red: READY.closureReduction }
+        ];
+        var lis = rows.map(function (r) {
+          return "<li><span><strong>" + r.label + "</strong> <span class=\"det\">· " + r.detail + "</span></span>" +
+            "<span class=\"" + (r.red > 0 ? "red" : "grn") + "\">" + (r.red > 0 ? "−" + r.red : "−0") + "</span></li>";
+        }).join("");
+        return "<div class=\"banner\"><div class=\"bhead\"><h2>Starting ROIP</h2>" +
+          "<span class=\"bscore\">" + READY.startingRoip + "<span> / 100</span></span></div>" +
+          "<ul>" + lis + "</ul>" +
+          "<p class=\"bfoot\">" + esc(READY_PULL.sourceLabel) + " · " + esc(READY_PULL.windowLabel) + " · " + esc(READY_PULL.pulledLabel) +
+          ". The OTD and Order Accuracy lines in Service start pre-filled from this pull — adjust them during the walk if needed.</p></div>";
+      }
+      function gradeBadgeHTML(total, lg) {
+        var g = gradeFor(total);
+        return "<span class=\"grade" + (lg ? " lg" : "") + "\" style=\"background:" + gradeColor(total) + "\" aria-label=\"Grade " + g.letter + ", " + g.label + "\">" +
+          g.letter + " <span style=\"font-weight:600\">" + g.label + "</span></span>";
+      }
+      function helpPanelHTML(help) {
+        var lis = help.points.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("");
+        return "<div class=\"help\"><h4>What this question means</h4>" +
+          "<div class=\"src\">ROIP Evaluator's Guide v2026 · &ldquo;" + esc(help.guide) + "&rdquo;</div><ul>" + lis + "</ul></div>";
+      }
+      function helpBtnHTML(itemId, color) {
+        var open = !!ui.helpOpen[itemId];
+        return "<button type=\"button\" class=\"help-btn\" data-action=\"help\" data-id=\"" + itemId + "\" aria-expanded=\"" + open +
+          "\" aria-label=\"What this question means\" style=\"border-color:" + color + ";color:" + (open ? "#fff" : color) + ";background:" + (open ? color : "#fff") + "\">?</button>";
+      }
+      function finalSummaryHTML(data, showGrade) {
+        var total = computeTotal(data);
+        var nnPts = data.violations.length * 10;
+        var names = { cleanliness: "Cleaning & Organizing", service: "Service, Training, & Brand Sta.", safety: "Sanitation/Food Safety" };
+        var rows = "<tr><td>Non-Negotiables</td><td class=\"r\" style=\"color:var(--dim)\">-50</td><td class=\"val\">" + (nnPts === 0 ? "0" : "−" + nnPts) + "</td></tr>";
+        SECTIONS.forEach(function (s) {
+          rows += "<tr><td>" + esc(names[s.id] || s.title) + "</td><td class=\"r\" style=\"color:var(--dim)\">" + s.max + "</td><td class=\"val\">" + fmtPts(sectionSubtotal(data, s)) + "</td></tr>";
+        });
+        rows += "<tr><td><strong>Total Points</strong></td><td class=\"r\" style=\"color:var(--dim)\">100</td><td class=\"val\">" + fmtPts(total) + "</td></tr>";
+        var out = "<table class=\"sum\"><thead><tr><th>ROIP Sections</th><th class=\"r\">Points</th><th class=\"r\">Total Score</th></tr></thead><tbody>" + rows + "</tbody></table>";
+        if (showGrade) {
+          var g = gradeFor(total);
+          var bands = [["90% - 100%", "A", "Very Good"], ["80% - 89%", "B", "Acceptable"], ["70% - 79%", "C", "Marginal"], ["Below 70%", "F", "Operations Fail"]];
+          var lis = bands.map(function (b) {
+            return "<li" + (g.letter === b[1] ? " class=\"on\"" : "") + ">" + b[0] + " " + b[1] + " " + b[2] + "</li>";
+          }).join("");
+          out += "<div class=\"grade-row\">" + gradeBadgeHTML(total, true) + "<ul class=\"bands\">" + lis + "</ul></div>";
+        }
+        return out;
+      }
+      function gradingRefHTML() {
+        return "<div class=\"ref\"><p class=\"rtitle\">Pizza grading criteria</p><dl>" +
+          "<div class=\"rrow\"><dt>Cut <span>1pt</span></dt><dd>Slices fully cut through.</dd></div>" +
+          "<div class=\"rrow\"><dt>Bake / Crust <span>1pt</span></dt><dd>6+ slices w/ consistent golden bake. No excessive dirty crust &gt;25%. No misshapen crust. Original Crust width &lt;1.25\", ESC Crust width &lt;1.5\".</dd></div>" +
+          "<div class=\"rrow\"><dt>Cheese Coverage <span>2 pts</span></dt><dd>Pizza has adequate cheese coverage (75%+) Bubbles smaller than 1\" diameter</dd></div>" +
+          "<div class=\"rrow\"><dt>Cheese Lock <span>2 pts</span></dt><dd>Pizza has adequate cheese lock (75%+) Bubbles smaller than 1\" diameter</dd></div>" +
+          "<div class=\"rrow\"><dt>Toppings <span>4 pts</span></dt><dd>Topping Distribution By Slice: Slice has adequate topping distribution; See topping tier below, 0.50 pts per slice</dd></div>" +
+          "</dl><p class=\"rtitle\" style=\"margin-top:10px\">Gradable Pizza Point Scale</p>" +
+          "<p>9 - 10 pts → 5 pts · 8 - 8.5 pts → 4 pts · 7.5 &amp; below → 0 pts</p>" +
+          "<p style=\"font-style:italic\">Directions-Grade five pizzas. Award points based on each pizza score using the Point Scale below.</p>" +
+          "<p class=\"rtitle\" style=\"margin-top:10px\">Slice &amp; Rise (1pt for each criteria)</p>" +
+          "<p>Center Volume · Edge Height &amp; Width · Top Crust Color · Bottom Crust Color · Cell Structure &amp; Slice Profile</p>" +
+          "<p class=\"rtitle\" style=\"margin-top:10px\">Topping Tier</p>" +
+          "<table><tr><th>Toppings</th><th>Per slice 1</th><th>2</th></tr>" +
+          "<tr><td>Pepperoni</td><td>5</td><td>2</td></tr><tr><td>Crumbled Meats</td><td>7</td><td>7</td></tr>" +
+          "<tr><td>Veggies</td><td>6</td><td>6</td></tr><tr><td>Ba, Ps, Ck, &amp; Fs</td><td colspan=\"2\">&gt;75%</td></tr></table></div>";
+      }
+      function serviceRefHTML(which) {
+        if (which === "otd") {
+          return "<div class=\"ref\"><p class=\"rtitle\">OTD — Last 60 days</p><p class=\"scale-line\">" +
+            "<span>≤18 → <strong>5</strong></span><span>18:01- 19:00 → <strong>4</strong></span><span>19:01- 20:00 → <strong>3</strong></span><span>20:01-21:00 → <strong>2</strong></span><span>21:01-22:00 → <strong>1</strong></span></p></div>";
+        }
+        return "<div class=\"ref\"><p class=\"rtitle\">Order Accuracy — Last 60 days</p><p class=\"scale-line\">" +
+          "<span>At or above 77% → <strong>5</strong></span><span>At or above 76% → <strong>4</strong></span><span>At or above 75% → <strong>3</strong></span><span>At or above 74% → <strong>2</strong></span><span>At or above 73% → <strong>1</strong></span></p>" +
+          "<p style=\"font-style:italic\">YOY improvement will grant +1, maximum points receivable caps at 5</p></div>";
+      }
+
+      /* ---------------- views ---------------- */
+      function showView(name) {
+        document.getElementById("view-home").hidden = name !== "home";
+        document.getElementById("view-walk").hidden = name !== "walk";
+        document.getElementById("view-result").hidden = name !== "result";
+        window.scrollTo(0, 0);
+      }
+
+      /* ---------------- home ---------------- */
+      function renderHome() {
+        document.getElementById("home-banner").innerHTML = bannerHTML();
+        var draft = loadDraft();
+        var box = document.getElementById("home-draft");
+        if (draft) {
+          var taken = Object.keys(draft.photos || {}).length;
+          box.innerHTML = "<div class=\"draft-card\">" +
+            "<p class=\"kicker\">Inspection in progress</p>" +
+            "<h2>Hickory #894</h2>" +
+            "<p class=\"sub\">" + esc(draft.inspectorName) + " · " + fmtDateFromStr(draft.dateStr) +
+            " · Photos: " + taken + " / " + TOTAL_SLOTS + " taken · Score so far: " + fmtPts(computeTotal(draft.data)) + " / 100</p>" +
+            "<div class=\"draft-actions\">" +
+            "<button type=\"button\" class=\"btn primary\" id=\"btn-resume\">Resume inspection</button>" +
+            "<button type=\"button\" class=\"btn danger-outline\" id=\"btn-discard\">" + (ui.discardArm ? "Tap again to discard" : "Discard") + "</button>" +
+            "</div></div>";
+          document.getElementById("btn-resume").addEventListener("click", function () {
+            working = draft;
+            if (!working.photos) working.photos = {};
+            ui.discardArm = false;
+            step = 0; onFinish = false;
+            showView("walk");
+            renderWalk();
+          });
+          document.getElementById("btn-discard").addEventListener("click", function () {
+            if (ui.discardArm) { clearDraft(); ui.discardArm = false; renderHome(); showToast("Draft discarded."); }
+            else { ui.discardArm = true; renderHome(); }
+          });
+        } else {
+          box.innerHTML = "";
+          ui.discardArm = false;
+        }
+        var hist = loadHistory();
+        var hbox = document.getElementById("home-history");
+        if (!hist.length) {
+          hbox.innerHTML = "<div class=\"panel\"><p class=\"empty-note\">No completed inspections yet. Finished inspections stay on this phone so you can open one and send it to Eddie any time.</p></div>";
+        } else {
+          var items = hist.map(function (r, i) {
+            var t = computeTotal(r.data);
+            return "<button type=\"button\" class=\"hist-item\" data-hist=\"" + i + "\">" +
+              "<span><span class=\"hname\">Hickory <span class=\"num\">#894</span></span>" +
+              "<span class=\"hmeta\">" + fmtDateFromStr(r.dateStr) + " · " + esc(r.inspectorName) + "</span></span>" +
+              "<span class=\"hscore\"><span class=\"n\">" + fmtPts(t) + "</span>" + gradeBadgeHTML(t, false) + "</span></button>";
+          }).join("");
+          hbox.innerHTML = "<div class=\"panel\" style=\"padding:0\">" + items + "</div>";
+          hbox.querySelectorAll("[data-hist]").forEach(function (el) {
+            el.addEventListener("click", function () {
+              resultRecord = loadHistory()[parseInt(el.getAttribute("data-hist"), 10)];
+              renderResult();
+              showView("result");
+            });
+          });
+        }
+      }
+
+      function startNew() {
+        var evaluator = document.getElementById("start-evaluator").value.trim();
+        var mic = document.getElementById("start-mic").value.trim();
+        if (!evaluator) { showToast("Add the evaluator's name first."); document.getElementById("start-evaluator").focus(); return; }
+        var data = emptyData();
+        data.scores.sv_otd = otdPrefill();
+        data.scores.sv_accuracy = accPrefill();
+        working = {
+          storeNumber: STORE.number, storeName: STORE.name, gmName: STORE.gm,
+          inspectorName: evaluator,
+          mic: mic || STORE.gm,
+          dateStr: document.getElementById("start-date").value || dateInputValue(new Date()),
+          timeIn: document.getElementById("start-timein").value || timeInputValue(new Date()),
+          timeOut: "",
+          certifiedName: evaluator,
+          data: data,
+          photos: {}
+        };
+        step = 0; onFinish = false;
+        ui.notesOpen = {}; ui.helpOpen = {}; ui.photoErr = {};
+        saveDraft();
+        showView("walk");
+        renderWalk();
+      }
+
+      /* ---------------- walk ---------------- */
+      function renderWalk() {
+        if (!working) return;
+        var total = computeTotal(working.data);
+        document.getElementById("walk-meta").textContent = working.inspectorName + " · " + fmtDateFromStr(working.dateStr);
+        var taken = photosTakenCount(working);
+        var chip = document.getElementById("walk-photos-chip");
+        chip.textContent = "📷 " + taken + "/" + TOTAL_SLOTS;
+        chip.classList.toggle("done", taken >= TOTAL_SLOTS);
+        document.getElementById("walk-total").innerHTML = fmtPts(total) + "<span>/100</span>";
+        var g = gradeFor(total);
+        var gb = document.getElementById("walk-grade");
+        gb.style.background = gradeColor(total);
+        gb.textContent = g.letter + " " + g.label;
+        document.getElementById("walk-banner").innerHTML = bannerHTML();
+
+        var tabs = [{ label: "Non-Negotiables", short: "Non-Neg.", sub: working.data.violations.length ? "−" + working.data.violations.length * 10 : "0", color: NN_COLOR }];
+        SECTIONS.forEach(function (s) {
+          tabs.push({ label: s.title, short: s.title.split(" ")[0], sub: fmtPts(sectionSubtotal(working.data, s)) + "/" + s.max, color: s.color });
+        });
+        tabs.push({ label: "Final Scoring", short: "Final", sub: "", color: FINAL_COLOR });
+        document.getElementById("walk-tabs").innerHTML = tabs.map(function (t, i) {
+          var active = onFinish ? i === tabs.length - 1 : step === i;
+          return "<button type=\"button\" class=\"tab" + (active ? " active" : "") + "\" data-tab=\"" + i + "\" style=\"background:" + t.color + "\" aria-label=\"Go to " + esc(t.label) + "\">" +
+            esc(t.short) + (t.sub ? " · " + t.sub : "") + "</button>";
+        }).join("");
+
+        document.getElementById("walk-body").innerHTML = onFinish ? finishHTML() : stepHTML();
+        document.getElementById("walk-nav").innerHTML = onFinish ? "" : navHTML();
+        bindWalk();
+      }
+
+      function navHTML() {
+        var back = "<button type=\"button\" class=\"btn\" data-nav=\"back\"" + (step === 0 ? " disabled" : "") + ">← Back</button>";
+        var next = step < SECTIONS.length
+          ? "<button type=\"button\" class=\"btn primary\" data-nav=\"next\">Next section →</button>"
+          : "<button type=\"button\" class=\"btn dark\" data-nav=\"finish\">Final Scoring →</button>";
+        return back + next;
+      }
+
+      function photoSpotsHTML(placement) {
+        return SPOTS.filter(function (s) { return s.placement === placement; }).map(function (spot) {
+          var taken = 0;
+          for (var i = 0; i < spot.slots; i++) if (working.photos[spot.id + ":" + i]) taken++;
+          var slots = "";
+          for (var j = 0; j < spot.slots; j++) {
+            (function (idx) {
+              var key = spot.id + ":" + idx;
+              var busy = !!ui.photoBusy[key];
+              if (working.photos[key]) {
+                slots += "<div class=\"ps-slot\"><span class=\"ps-taken\">✓ Photo taken" + (spot.slots > 1 ? " — " + esc(spot.label) + " " + (idx + 1) : "") + "</span>" +
+                  "<button type=\"button\" class=\"ps-small\" data-photo-retake=\"" + key + "\"" + (busy ? " disabled" : "") + ">" + (busy ? "Saving…" : "Retake") + "</button>" +
+                  "<button type=\"button\" class=\"ps-small ps-del\" data-photo-del=\"" + key + "\" aria-label=\"Remove " + esc(spotLabel(spot.id, idx)) + " photo\"" + (busy ? " disabled" : "") + ">✕</button></div>";
+              } else {
+                slots += "<div class=\"ps-slot\"><button type=\"button\" class=\"ps-take\" data-photo-take=\"" + key + "\"" + (busy ? " disabled" : "") + ">" +
+                  (busy ? "Saving photo…" : "📷 Take photo" + (spot.slots > 1 ? " — " + esc(spot.label) + " " + (idx + 1) : "")) + "</button></div>";
+              }
+            })(j);
+          }
+          var err = ui.photoErr[spot.id] ? "<p class=\"ps-err\">" + esc(ui.photoErr[spot.id]) + "</p>" : "";
+          return "<div class=\"photo-spot\"><div class=\"ps-head\"><p class=\"ps-name\">📷 " + esc(spot.label) +
+            "<span class=\"ps-req\">Photo required</span></p>" +
+            "<span class=\"ps-count" + (taken >= spot.slots ? " done" : "") + "\">" + taken + " of " + spot.slots + " taken</span></div>" +
+            "<div class=\"ps-slots\">" + slots + "</div>" + err + "</div>";
+        }).join("");
+      }
+
+      function scoreControlHTML(it) {
+        var value = working.data.scores[it.id];
+        if (HALF_ITEMS[it.id]) {
+          var v = value === undefined ? 0 : value;
+          return "<div class=\"stepper\" role=\"group\" aria-label=\"Score for " + esc(it.label) + "\">" +
+            "<button type=\"button\" class=\"step-btn\" data-step=\"-0.5\" data-id=\"" + it.id + "\" aria-label=\"Decrease score\"" + (value === undefined || v <= 0 ? " disabled" : "") + ">−</button>" +
+            "<span class=\"val\">" + (value === undefined ? "—" : fmtPts(v)) + " <span>/ " + it.max + "</span></span>" +
+            "<button type=\"button\" class=\"step-btn\" data-step=\"0.5\" data-id=\"" + it.id + "\" aria-label=\"Increase score\"" + (v >= it.max ? " disabled" : "") + ">+</button>" +
+            "<button type=\"button\" class=\"full-btn\" data-full=\"" + it.id + "\">Full</button></div>";
+        }
+        var chips = "";
+        for (var c = 0; c <= it.max; c++) {
+          chips += "<button type=\"button\" class=\"score-btn" + (c === 0 ? " zero" : "") + "\" data-score=\"" + c + "\" data-id=\"" + it.id +
+            "\" aria-pressed=\"" + (value === c) + "\" aria-label=\"Score " + c + " of " + it.max + "\">" + c + "</button>";
+        }
+        return "<div class=\"score-row\" role=\"group\" aria-label=\"Score for " + esc(it.label) + "\">" + chips + "<span class=\"of\">/ " + it.max + " pts</span></div>";
+      }
+
+      function itemCardHTML(it, section) {
+        var note = working.data.notes[it.id] || "";
+        var noteOpen = !!ui.notesOpen[it.id] || !!note;
+        var help = HELP[it.id];
+        var extra = "";
+        if (it.id === "pq_makeline_temp") {
+          extra = "<div class=\"temp-fields\">" +
+            [["top", "Top º"], ["bottom", "Bottom º"], ["walkin", "Walk-in º"]].map(function (f) {
+              return "<div class=\"temp-field\"><label for=\"temp-" + f[0] + "\">" + f[1] + "</label>" +
+                "<input id=\"temp-" + f[0] + "\" data-temp=\"" + f[0] + "\" inputmode=\"decimal\" value=\"" + esc(working.data.temps[f[0]]) + "\" aria-label=\"Makeline temperature " + f[1] + "\"></div>";
+            }).join("") + "</div>";
+        }
+        if (it.id === "pq_sauce_temp") {
+          extra = "<div class=\"temp-fields\"><div class=\"temp-field\"><label for=\"temp-sauce\">Sauce temp º</label>" +
+            "<input id=\"temp-sauce\" data-temp=\"sauce\" inputmode=\"decimal\" value=\"" + esc(working.data.temps.sauce) + "\" aria-label=\"In use pizza sauce temperature\"></div></div>";
+        }
+        if (it.id === "sv_otd") {
+          extra += "<p class=\"prefill-note\">Readiness pull (" + esc(READY_PULL.windowLabel.toLowerCase()) + "): Avg OTD <strong>" + READY.avgOtdMin.toFixed(2) + " min</strong> — pre-filled " + otdPrefill() + " pts. Adjust if the walk shows otherwise.</p>";
+        }
+        if (it.id === "sv_accuracy") {
+          extra += "<p class=\"prefill-note\">Readiness pull (" + esc(READY_PULL.windowLabel.toLowerCase()) + "): Order Accuracy <strong>" + READY.orderAccuracyPct.toFixed(2) + "%</strong> — pre-filled " + accPrefill() + " pts. Adjust if the walk shows otherwise.</p>";
+        }
+        return "<article class=\"card\" style=\"border-left:7px solid " + section.color + "\">" +
+          "<div class=\"q-head\"><h3 class=\"q-text\">" + esc(it.label) + "</h3><span class=\"q-pts\">" + it.max + (it.max > 1 ? " pts" : " pt") + "</span></div>" +
+          scoreControlHTML(it) + extra +
+          "<div class=\"actions\">" +
+          (note ? "<span class=\"note-btn has-note\" style=\"text-decoration:none\">Note added ✓</span>"
+                : "<button type=\"button\" class=\"note-btn\" data-action=\"note\" data-id=\"" + it.id + "\">" + (ui.notesOpen[it.id] ? "Hide note" : "Add note") + "</button>") +
+          "<span class=\"spacer\">" + (help ? helpBtnHTML(it.id, section.color) : "") + "</span></div>" +
+          (noteOpen ? "<div class=\"note-wrap\"><textarea data-note=\"" + it.id + "\" placeholder=\"Note (optional)\" aria-label=\"Note for " + esc(it.label) + "\">" + esc(note) + "</textarea></div>" : "") +
+          (ui.helpOpen[it.id] && help ? helpPanelHTML(help) : "") +
+          "</article>";
+      }
+
+      function stepHTML() {
+        if (step === 0) {
+          var cards = NN.map(function (n) {
+            var flagged = working.data.violations.indexOf(n.id) >= 0;
+            var help = HELP[n.id];
+            return "<article class=\"card nn-card" + (flagged ? " flagged" : "") + "\" style=\"border-left:7px solid " + NN_COLOR + "\">" +
+              "<button type=\"button\" class=\"nn-toggle\" data-nn=\"" + n.id + "\" aria-pressed=\"" + flagged + "\" aria-label=\"Non-Negotiable: " + esc(n.label) + "\">" +
+              "<span class=\"lbl\">" + esc(n.label) + "</span>" +
+              "<span class=\"nn-chip\">" + (flagged ? "−10 FLAGGED" : "−10") + "</span></button>" +
+              (help ? "<div class=\"nn-help-row\">" + helpBtnHTML(n.id, NN_COLOR) + "</div>" + (ui.helpOpen[n.id] ? helpPanelHTML(help) : "") : "") +
+              "</article>";
+          }).join("");
+          return "<div class=\"panel\" style=\"margin-bottom:20px\"><div class=\"section-bar\" style=\"background:" + NN_COLOR + "\"><h2>Non-Negotiables</h2><span class=\"right\">−10 each</span></div>" +
+            "<p style=\"padding:10px 12px;margin:0;font-size:.9rem;color:var(--dim)\">Tap an item only if the violation is present. Each flagged item deducts 10 points.</p></div>" +
+            photoSpotsHTML("nn") + cards;
+        }
+        var section = SECTIONS[step - 1];
+        var html = "<div class=\"panel\" style=\"margin-bottom:20px\"><div class=\"section-bar\" style=\"background:" + section.color + "\"><h2>" + esc(section.title) + "</h2>" +
+          "<span class=\"right\">" + fmtPts(sectionSubtotal(working.data, section)) + " / " + section.max + " Pts</span></div></div>";
+        if (section.id === "product" || section.id === "cleanliness") html += photoSpotsHTML(section.id);
+        if (section.id === "service") html += serviceRefHTML("otd");
+        var lastGroup = null;
+        section.items.forEach(function (it) {
+          if (section.id === "service" && it.id === "sv_accuracy") html += serviceRefHTML("accuracy");
+          if (it.group && it.group !== lastGroup) {
+            html += "<p class=\"group-label\">" + esc(it.group) + "</p>";
+            lastGroup = it.group;
+          }
+          html += itemCardHTML(it, section);
+        });
+        if (section.id === "product") html += gradingRefHTML();
+        return html;
+      }
+
+      function finishHTML() {
+        var data = working.data;
+        var total = computeTotal(data);
+        var unscored = 0;
+        SECTIONS.forEach(function (s) { s.items.forEach(function (it) { if (data.scores[it.id] === undefined) unscored++; }); });
+        var missing = missingPhotos(working);
+        var checklist = SPOTS.map(function (sp) {
+          var rows = "";
+          for (var i = 0; i < sp.slots; i++) {
+            var taken = !!working.photos[sp.id + ":" + i];
+            rows += "<li><span>" + esc(spotLabel(sp.id, i)) + "</span>" + (taken ? "<span class=\"ok\">✓ Taken</span>" : "<span class=\"warn\">✗ Missing</span>") + "</li>";
+          }
+          return rows;
+        }).join("");
+        return "<div class=\"panel\"><div class=\"section-bar\" style=\"background:" + FINAL_COLOR + "\"><h2>Final Scoring</h2><span class=\"right\">" + fmtPts(total) + " / 100</span></div>" +
+          finalSummaryHTML(data, true) +
+          (unscored > 0 ? "<p class=\"warn\" style=\"padding:0 12px 12px;margin:0\">" + unscored + " item" + (unscored === 1 ? "" : "s") + " not yet scored — unscored items count as 0.</p>" : "") +
+          "</div>" +
+          "<div class=\"panel\"><div class=\"section-bar\" style=\"background:" + FINAL_COLOR + "\"><h2>Photos</h2><span class=\"right\">" + photosTakenCount(working) + " / " + TOTAL_SLOTS + " taken</span></div>" +
+          "<ul class=\"checklist\">" + checklist + "</ul>" +
+          (missing.length ? "<p class=\"warn\" style=\"padding:0 12px 12px;margin:0\">" + missing.length + " required photo" + (missing.length === 1 ? "" : "s") + " still missing — go back to the section shown on each photo spot to take " + (missing.length === 1 ? "it" : "them") + ".</p>" : "") +
+          "</div>" +
+          "<div class=\"panel\"><div class=\"section-bar\" style=\"background:" + FINAL_COLOR + "\"><h2>Certification</h2></div>" +
+          "<div style=\"padding:14px\" class=\"stack\">" +
+          "<div><label class=\"flabel\" for=\"cert-name\">I, (franchisee) — certify I completed the ROIP against Papa Johns standards.</label>" +
+          "<input id=\"cert-name\" class=\"field-input\" data-cert value=\"" + esc(working.certifiedName) + "\" aria-label=\"Certifying franchisee name\"></div>" +
+          "<p class=\"sub\" style=\"font-size:.88rem\">Evaluator: " + esc(working.inspectorName) + " · MIC: " + esc(working.mic || "—") + " · Date: " + fmtDateFromStr(working.dateStr) + "</p>" +
+          "<div><label class=\"flabel\" for=\"time-out\">Time out</label>" +
+          "<input id=\"time-out\" type=\"time\" class=\"field-input\" data-timeout value=\"" + esc(working.timeOut) + "\"></div>" +
+          "</div></div>" +
+          "<div class=\"panel\"><div class=\"section-bar\" style=\"background:" + FINAL_COLOR + "\"><h2>Action items for follow up</h2></div>" +
+          "<div style=\"padding:14px\"><textarea class=\"field-input\" data-actions rows=\"5\" placeholder=\"Action items for follow up…\" aria-label=\"Action items for follow up\">" + esc(data.actionItems) + "</textarea></div></div>" +
+          "<button type=\"button\" class=\"btn primary big\" data-complete" + (missing.length ? " disabled" : "") + ">" +
+          (missing.length ? "Complete inspection — " + missing.length + " photo" + (missing.length === 1 ? "" : "s") + " missing" : "Complete inspection") + "</button>" +
+          "<p class=\"sub\" style=\"font-size:.85rem;margin-top:10px\">Completing saves the finished inspection on this phone and opens the result sheet to send to Eddie.</p>";
+      }
+
+      /* ---------------- photo capture ---------------- */
+      function processPhoto(file, done, fail) {
+        var url = URL.createObjectURL(file);
+        var img = new Image();
+        img.onload = function () {
+          try {
+            var MAX = 1024;
+            var scale = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight));
+            var w = Math.max(1, Math.round(img.naturalWidth * scale));
+            var h = Math.max(1, Math.round(img.naturalHeight * scale));
+            var canvas = document.createElement("canvas");
+            canvas.width = w; canvas.height = h;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, w, h);
+            URL.revokeObjectURL(url);
+            done(canvas.toDataURL("image/jpeg", 0.72));
+          } catch (e) { URL.revokeObjectURL(url); fail(); }
+        };
+        img.onerror = function () { URL.revokeObjectURL(url); fail(); };
+        img.src = url;
+      }
+
+      var pendingPhotoKey = null;
+      function ensurePhotoInput() {
+        var input = document.getElementById("photo-input");
+        if (input) return input;
+        input = document.createElement("input");
+        input.type = "file";
+        input.id = "photo-input";
+        input.accept = "image/*";
+        input.setAttribute("capture", "environment");
+        input.hidden = true;
+        input.setAttribute("aria-label", "Camera for inspection photo");
+        document.body.appendChild(input);
+        input.addEventListener("change", function () {
+          var file = input.files && input.files[0];
+          input.value = "";
+          if (!file || !pendingPhotoKey || !working) return;
+          var key = pendingPhotoKey;
+          pendingPhotoKey = null;
+          var parts = key.split(":");
+          var spotId = parts[0];
+          ui.photoBusy[key] = true;
+          renderWalk();
+          processPhoto(file, function (dataUrl) {
+            working.photos[key] = { src: dataUrl, at: new Date().toISOString() };
+            delete ui.photoBusy[key];
+            delete ui.photoErr[spotId];
+            saveDraft();
+            renderWalk();
+          }, function () {
+            delete ui.photoBusy[key];
+            ui.photoErr[spotId] = "That photo could not be saved. Try again.";
+            renderWalk();
+          });
+        });
+        return input;
+      }
+
+      /* ---------------- walk events (delegated) ---------------- */
+      function bindWalk() {
+        var body = document.getElementById("walk-body");
+        // text inputs keep their own listeners after each render
+        body.querySelectorAll("textarea[data-note]").forEach(function (ta) {
+          ta.addEventListener("input", function () {
+            working.data.notes[ta.getAttribute("data-note")] = ta.value;
+            saveDraftSoon();
+            var card = ta.closest(".card");
+            if (card) {
+              var row = card.querySelector(".actions");
+              if (row && ta.value.trim() && !row.querySelector(".has-note")) renderWalkSoft();
+            }
+          });
+        });
+        body.querySelectorAll("input[data-temp]").forEach(function (inp) {
+          inp.addEventListener("input", function () {
+            working.data.temps[inp.getAttribute("data-temp")] = inp.value;
+            saveDraftSoon();
+          });
+        });
+        var cert = body.querySelector("[data-cert]");
+        if (cert) cert.addEventListener("input", function () { working.certifiedName = cert.value; saveDraftSoon(); });
+        var tout = body.querySelector("[data-timeout]");
+        if (tout) tout.addEventListener("input", function () { working.timeOut = tout.value; saveDraftSoon(); });
+        var acts = body.querySelector("[data-actions]");
+        if (acts) acts.addEventListener("input", function () { working.data.actionItems = acts.value; saveDraftSoon(); });
+      }
+      function renderWalkSoft() { /* note label refresh happens on next full render; keep caret for now */ }
+
+      document.getElementById("walk-tabs").addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-tab]");
+        if (!btn) return;
+        var i = parseInt(btn.getAttribute("data-tab"), 10);
+        var last = SECTIONS.length + 1;
+        if (i === last) { onFinish = true; }
+        else { onFinish = false; step = i; }
+        renderWalk();
+      });
+
+      document.getElementById("walk-body").addEventListener("click", function (e) {
+        if (!working) return;
+        var t = e.target;
+        var scoreBtn = t.closest("[data-score]");
+        if (scoreBtn) {
+          var id = scoreBtn.getAttribute("data-id");
+          var v = parseInt(scoreBtn.getAttribute("data-score"), 10);
+          if (working.data.scores[id] === v) delete working.data.scores[id];
+          else working.data.scores[id] = v;
+          saveDraft(); renderWalk(); return;
+        }
+        var stepBtn = t.closest("[data-step]");
+        if (stepBtn) {
+          var sid = stepBtn.getAttribute("data-id");
+          var cur = working.data.scores[sid] || 0;
+          var nv = Math.round((cur + parseFloat(stepBtn.getAttribute("data-step"))) * 2) / 2;
+          working.data.scores[sid] = Math.min(ITEM_MAX[sid], Math.max(0, nv));
+          saveDraft(); renderWalk(); return;
+        }
+        var fullBtn = t.closest("[data-full]");
+        if (fullBtn) {
+          var fid = fullBtn.getAttribute("data-full");
+          working.data.scores[fid] = ITEM_MAX[fid];
+          saveDraft(); renderWalk(); return;
+        }
+        var nnBtn = t.closest("[data-nn]");
+        if (nnBtn) {
+          var nid = nnBtn.getAttribute("data-nn");
+          var idx = working.data.violations.indexOf(nid);
+          if (idx >= 0) working.data.violations.splice(idx, 1);
+          else working.data.violations.push(nid);
+          saveDraft(); renderWalk(); return;
+        }
+        var actBtn = t.closest("[data-action]");
+        if (actBtn) {
+          var aid = actBtn.getAttribute("data-id");
+          if (actBtn.getAttribute("data-action") === "note") {
+            ui.notesOpen[aid] = !ui.notesOpen[aid];
+            renderWalk();
+            var ta = document.querySelector("textarea[data-note=\"" + aid + "\"]");
+            if (ta && ui.notesOpen[aid]) ta.focus();
+          } else if (actBtn.getAttribute("data-action") === "help") {
+            ui.helpOpen[aid] = !ui.helpOpen[aid];
+            renderWalk();
+          }
+          return;
+        }
+        var takeBtn = t.closest("[data-photo-take],[data-photo-retake]");
+        if (takeBtn) {
+          pendingPhotoKey = takeBtn.getAttribute("data-photo-take") || takeBtn.getAttribute("data-photo-retake");
+          ensurePhotoInput().click();
+          return;
+        }
+        var delBtn = t.closest("[data-photo-del]");
+        if (delBtn) {
+          delete working.photos[delBtn.getAttribute("data-photo-del")];
+          saveDraft(); renderWalk(); return;
+        }
+        var compBtn = t.closest("[data-complete]");
+        if (compBtn && !compBtn.disabled) { completeInspection(); return; }
+      });
+
+      document.getElementById("walk-nav").addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-nav]");
+        if (!btn || btn.disabled) return;
+        var dir = btn.getAttribute("data-nav");
+        if (dir === "back") step = Math.max(0, step - 1);
+        if (dir === "next") step = Math.min(SECTIONS.length, step + 1);
+        if (dir === "finish") { onFinish = true; renderWalk(); return; }
+        onFinish = false;
+        renderWalk();
+      });
+
+      document.getElementById("btn-pause").addEventListener("click", function () {
+        saveDraft();
+        working = null;
+        showView("home");
+        renderHome();
+      });
+
+      function completeInspection() {
+        if (!working || missingPhotos(working).length) return;
+        var record = JSON.parse(JSON.stringify(working));
+        record.completedAt = new Date().toISOString();
+        var hist = loadHistory();
+        hist.unshift(record);
+        var kept = saveHistory(hist);
+        clearDraft();
+        working = null;
+        resultRecord = record;
+        renderResult();
+        showView("result");
+        showToast(kept ? "Inspection complete — now send it to Eddie." : "Inspection complete. Storage was full, so send it to Eddie now.");
+      }
+
+      /* ---------------- result sheet (paper form) ---------------- */
+      function earnedStr(data, id) {
+        return data.scores[id] === undefined ? "" : fmtPts(data.scores[id]);
+      }
+      function paperHTML(r) {
+        var data = r.data;
+        var total = computeTotal(data);
+        var g = gradeFor(total);
+        var html = "<div class=\"p-head\"><div class=\"row\"><span class=\"brand\">PAPA JOHN'S</span><span class=\"fname\">ROIP Inspection Form</span></div><p class=\"tag\">Quality Cleanliness Training Safety</p></div>";
+        html += "<div class=\"p-meta\">" +
+          "<span>Restaurant: <strong>Hickory #894</strong></span>" +
+          "<span>Fran/Corp: <strong></strong></span>" +
+          "<span>Group: <strong></strong></span>" +
+          "<span>Date: <strong>" + fmtDateFromStr(r.dateStr) + "</strong></span>" +
+          "<span>OVP/DVP: <strong></strong></span>" +
+          "<span>MIC: <strong>" + esc(r.mic) + "</strong></span>" +
+          "<span>Time in: <strong>" + esc(r.timeIn) + "</strong></span>" +
+          "<span>FGD/DO: <strong></strong></span><span></span>" +
+          "<span>Time out: <strong>" + esc(r.timeOut) + "</strong></span>" +
+          "<span>Evaluator: <strong>" + esc(r.inspectorName) + "</strong></span><span></span></div>";
+
+        html += "<div class=\"p-sec\"><div class=\"p-secbar\" style=\"background:" + NN_COLOR + "\"><span>Non-Negotiables</span></div>" +
+          "<table class=\"p-table\"><tbody>" +
+          NN.map(function (n) {
+            return "<tr><td>" + esc(n.label) + "</td><td class=\"p-earned\">" + (data.violations.indexOf(n.id) >= 0 ? "−10" : "") + "</td></tr>";
+          }).join("") + "</tbody></table></div>";
+
+        SECTIONS.forEach(function (s) {
+          html += "<div class=\"p-sec\"><div class=\"p-secbar\" style=\"background:" + s.color + "\"><span>" + esc(s.title) + "</span><span>" + s.max + " Pts · Points Earned</span></div>" +
+            "<table class=\"p-table\"><tbody>";
+          s.items.forEach(function (it) {
+            var label = esc(it.label);
+            if (it.id === "pq_makeline_temp") label += " — Top " + (esc(data.temps.top) || "___") + "º Bottom " + (esc(data.temps.bottom) || "___") + "º Walk-in " + (esc(data.temps.walkin) || "___") + "º";
+            if (it.id === "pq_sauce_temp") label += " — " + (esc(data.temps.sauce) || "___") + "º";
+            if (data.notes[it.id]) label += "<span class=\"p-note\">" + esc(data.notes[it.id]) + "</span>";
+            html += "<tr><td>" + label + "</td><td class=\"p-max\">" + it.max + "</td><td class=\"p-earned\">" + earnedStr(data, it.id) + "</td></tr>";
+          });
+          html += "<tr><td style=\"text-align:right;font-weight:700\" colspan=\"2\">Section total</td><td class=\"p-earned\">" + fmtPts(sectionSubtotal(data, s)) + "</td></tr></tbody></table>";
+          if (s.id === "product") {
+            html += "<div class=\"p-ref\">Cut 1pt Slices fully cut through. · Bake / Crust 1pt 6+ slices w/ consistent golden bake. No excessive dirty crust &gt;25%. No misshapen crust. Original Crust width &lt;1.25\", ESC Crust width &lt;1.5\". · Cheese Coverage 2 pts (75%+) · Cheese Lock 2 pts (75%+) · Toppings 4 pts, 0.50 pts per slice. Gradable Pizza Point Scale: 9 - 10 pts → 5 pts; 8 - 8.5 pts → 4 pts; 7.5 &amp; below → 0 pts. Topping Tier: Pepperoni 5/2, Crumbled Meats 7/7, Veggies 6/6, Ba, Ps, Ck, &amp; Fs &gt;75%.</div>";
+          }
+          if (s.id === "service") {
+            html += "<div class=\"p-ref\">OTD (Last 60 days): ≤18 → 5; 18:01- 19:00 → 4; 19:01- 20:00 → 3; 20:01-21:00 → 2; 21:01-22:00 → 1. Order Accuracy (Last 60 days): At or above 77% → 5; 76% → 4; 75% → 3; 74% → 2; 73% → 1. YOY improvement will grant +1, maximum points receivable caps at 5.</div>";
+          }
+          html += "</div>";
+        });
+
+        var nnPts = data.violations.length * 10;
+        var names = { cleanliness: "Cleaning & Organizing", service: "Service, Training, & Brand Sta.", safety: "Sanitation/Food Safety" };
+        var sumRows = "<tr><td>Non-Negotiables</td><td class=\"p-max\">-50</td><td class=\"p-earned\">" + (nnPts === 0 ? "0" : "−" + nnPts) + "</td></tr>";
+        SECTIONS.forEach(function (s) {
+          sumRows += "<tr><td>" + esc(names[s.id] || s.title) + "</td><td class=\"p-max\">" + s.max + "</td><td class=\"p-earned\">" + fmtPts(sectionSubtotal(data, s)) + "</td></tr>";
+        });
+        sumRows += "<tr><td><strong>Total Points</strong></td><td class=\"p-max\">100</td><td class=\"p-earned\">" + fmtPts(total) + "</td></tr>";
+
+        html += "<div class=\"p-sec\"><div class=\"p-secbar\" style=\"background:" + FINAL_COLOR + "\"><span>Final Scoring</span></div>" +
+          "<div class=\"p-box\"><p style=\"margin:0 0 4px\">I, (franchisee) <strong>" + esc(r.certifiedName || "________________") + "</strong> certify I completed the ROIP against Papa Johns standards.</p>" +
+          "<p style=\"margin:0 0 4px\">Evaluator: <strong>" + esc(r.inspectorName) + "</strong> · MIC: <strong>" + esc(r.mic) + "</strong> · Date: <strong>" + fmtDateFromStr(r.dateStr) + "</strong></p>" +
+          "<p style=\"margin:0 0 6px\">90% - 100% A Very Good · 80% - 89% B Acceptable · 70% - 79% C Marginal · Below 70% F Operations Fail</p>" +
+          "<table class=\"p-table\" style=\"border:0\"><tbody>" + sumRows + "</tbody></table>" +
+          "<p style=\"margin:6px 0 0;font-size:1rem\"><strong>Total: " + fmtPts(total) + " — Grade " + g.letter + " (" + g.label + ")</strong></p></div></div>";
+
+        html += "<div class=\"p-sec\"><div class=\"p-secbar\" style=\"background:" + FINAL_COLOR + "\"><span>Action items for follow up</span></div>" +
+          "<div class=\"p-box p-actions\">" + esc(data.actionItems || "") + "</div>" +
+          "<p style=\"margin:8px 0 0;font-weight:600\">Photos: " + Object.keys(r.photos || {}).length + " / " + TOTAL_SLOTS + " taken</p>" +
+          "<p class=\"p-foot\">Final 4-2021</p></div>";
+
+        html += "<div class=\"p-sec appendix\"><div class=\"p-secbar\" style=\"background:" + FINAL_COLOR + "\"><span>Photo appendix</span></div><div style=\"border:1px solid #c9cdc9\">";
+        SPOTS.forEach(function (sp) {
+          for (var i = 0; i < sp.slots; i++) {
+            var ph = (r.photos || {})[sp.id + ":" + i];
+            if (ph) {
+              html += "<figure><figcaption>" + esc(spotLabel(sp.id, i)) + " <span>· " + fmtDateTime(ph.at) + "</span></figcaption><img src=\"" + ph.src + "\" alt=\"" + esc(spotLabel(sp.id, i)) + " inspection photo\"></figure>";
+            } else {
+              html += "<figure><figcaption>" + esc(spotLabel(sp.id, i)) + "</figcaption><p style=\"margin:0;color:#666\">Not taken</p></figure>";
+            }
+          }
+        });
+        html += "</div></div>";
+        return html;
+      }
+
+      function renderResult() {
+        if (!resultRecord) return;
+        document.getElementById("paper").innerHTML = paperHTML(resultRecord);
+      }
+
+      function shareText(r) {
+        var data = r.data;
+        var total = computeTotal(data);
+        var g = gradeFor(total);
+        var lines = [];
+        lines.push("ROIP Inspection — Hickory #894");
+        lines.push("Date: " + fmtDateFromStr(r.dateStr) + " · Evaluator: " + r.inspectorName + " · MIC: " + r.mic);
+        lines.push("TOTAL: " + fmtPts(total) + " / 100 — Grade " + g.letter + " (" + g.label + ")");
+        lines.push("");
+        lines.push("Non-Negotiables: " + (data.violations.length ? "−" + data.violations.length * 10 : "0"));
+        data.violations.forEach(function (id) {
+          NN.forEach(function (n) { if (n.id === id) lines.push("  • FLAGGED: " + n.label); });
+        });
+        SECTIONS.forEach(function (s) {
+          lines.push(s.title + ": " + fmtPts(sectionSubtotal(data, s)) + " / " + s.max);
+        });
+        var anyNotes = false;
+        SECTIONS.forEach(function (s) {
+          s.items.forEach(function (it) {
+            if (data.notes[it.id]) {
+              if (!anyNotes) { lines.push(""); lines.push("Notes:"); anyNotes = true; }
+              lines.push("  • " + it.label + " — " + data.notes[it.id]);
+            }
+          });
+        });
+        if (data.temps.top || data.temps.bottom || data.temps.walkin) {
+          lines.push("");
+          lines.push("Temps — Top " + (data.temps.top || "—") + "º · Bottom " + (data.temps.bottom || "—") + "º · Walk-in " + (data.temps.walkin || "—") + "º" + (data.temps.sauce ? " · Sauce " + data.temps.sauce + "º" : ""));
+        }
+        if (data.actionItems) { lines.push(""); lines.push("Action items: " + data.actionItems); }
+        lines.push("");
+        lines.push("Photos: " + Object.keys(r.photos || {}).length + " / " + TOTAL_SLOTS + " taken (full result sheet with photo appendix is in the ROIP Tool on my phone — Print / Save as PDF there makes the complete file).");
+        lines.push("Starting ROIP for this store was " + READY.startingRoip + " (" + READY_PULL.windowLabel + ").");
+        return lines.join("\n");
+      }
+
+      function doShare() {
+        if (!resultRecord) return;
+        var text = shareText(resultRecord);
+        if (navigator.share) {
+          navigator.share({ title: "ROIP Inspection — Hickory #894", text: text }).catch(function () {});
+        } else if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            showToast("Result copied — paste it into a message to Eddie. For the full sheet with photos, use Print / Save as PDF.");
+          }, function () { showToast("Use Print / Save as PDF and send Eddie the file."); });
+        } else {
+          showToast("Use Print / Save as PDF and send Eddie the file.");
+        }
+      }
+
+      document.getElementById("btn-share").addEventListener("click", doShare);
+      document.getElementById("btn-share-2").addEventListener("click", doShare);
+      document.getElementById("btn-print").addEventListener("click", function () { window.print(); });
+      document.getElementById("btn-result-back").addEventListener("click", function () {
+        resultRecord = null;
+        showView("home");
+        renderHome();
+      });
+      document.getElementById("btn-begin").addEventListener("click", function () {
+        if (loadDraft()) { showToast("An inspection is already in progress — resume or discard it first."); return; }
+        startNew();
+      });
+
+      /* ---------------- init ---------------- */
+      (function init() {
+        var now = new Date();
+        document.getElementById("start-date").value = dateInputValue(now);
+        document.getElementById("start-timein").value = timeInputValue(now);
+        renderHome();
+        showView("home");
+      })();
+    </script>
+  </body>
+</html>
